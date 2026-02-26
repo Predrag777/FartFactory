@@ -74,6 +74,39 @@ const CONST_CHECK_MAX_SEC = 10;
 const CONST_HOLD_TO_CURE_MS = 1000; // hold 1s
 const CONST_CURE_PRESSURE = 10;     // posle cure pressure = 30%
 
+const SOUND_FILES = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`);
+let holdLoopAudio = null;
+
+function pickRandomSoundSrc() {
+  if (!SOUND_FILES.length) return null;
+  const idx = Math.floor(Math.random() * SOUND_FILES.length);
+  return SOUND_FILES[idx];
+}
+
+function playRandomTapSound() {
+  const src = pickRandomSoundSrc();
+  if (!src) return;
+  const audio = new Audio(src);
+  audio.play().catch(() => {});
+}
+
+function stopHoldLoopSound() {
+  if (!holdLoopAudio) return;
+  holdLoopAudio.pause();
+  holdLoopAudio.currentTime = 0;
+  holdLoopAudio = null;
+}
+
+function startRandomHoldLoopSound() {
+  stopHoldLoopSound();
+  const src = pickRandomSoundSrc();
+  if (!src) return;
+
+  holdLoopAudio = new Audio(src);
+  holdLoopAudio.loop = true;
+  holdLoopAudio.play().catch(() => {});
+}
+
 function rand(a, b){ return a + Math.random() * (b - a); }
 
 let nextConstipationCheck = CONST_START_AFTER_SEC + rand(CONST_CHECK_MIN_SEC, CONST_CHECK_MAX_SEC);
@@ -191,6 +224,7 @@ function cureConstipation(i) {
   constipated[i] = false;
   holdMs[i] = 0;
   hideConstipation(i);
+  stopHoldLoopSound();
 
   pressures[i] = CONST_CURE_PRESSURE;
   setGasHeight(slots[i], pressures[i]);
@@ -212,6 +246,7 @@ function closeGameOverPopup() {
 
 function triggerGameOver() {
   gameOver = true;
+  stopHoldLoopSound();
   slots.forEach(s => s.disabled = true);
 
   if (deathStatusEl) {
@@ -231,6 +266,7 @@ function killSlot(i) {
     constipated[i] = false;
     holdMs[i] = 0;
     hideConstipation(i);
+    stopHoldLoopSound();
   }
 
   dead[i] = true;
@@ -266,6 +302,7 @@ function reviveSlot(i) {
 // -----------------------------
 function restartGame() {
   gameOver = false;
+  stopHoldLoopSound();
   totalDeaths = 0;
   updateDeathStatus();
 
@@ -321,12 +358,20 @@ window.addEventListener("pointerdown", (e) => {
   if (i === null) return;
   if (dead[i]) return; // disabled ionako blokira
 
+  playRandomTapSound();
+
   pointerDown = { id: e.pointerId, i, t0: performance.now() };
+
+  if (constipated[i]) {
+    startRandomHoldLoopSound();
+  }
 }, { passive: true });
 
 window.addEventListener("pointerup", (e) => {
   if (!pointerDown) return;
   if (e.pointerId !== pointerDown.id) return;
+
+  stopHoldLoopSound();
 
   const { i, t0 } = pointerDown;
   pointerDown = null;
@@ -353,6 +398,7 @@ window.addEventListener("pointerup", (e) => {
 }, { passive: true });
 
 window.addEventListener("pointercancel", () => {
+  stopHoldLoopSound();
   pointerDown = null;
 }, { passive: true });
 
