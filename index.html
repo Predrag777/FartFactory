@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gas Slots UI</title>
+  <link rel="stylesheet" href="style/gameplayStyle.css" />
+   <link rel="stylesheet" href="style/popupsStyle.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+        <div class="title">
+            <h1>FART FACTORY</h1>
+            <div class="subtitle">8 slotova (4 gore / 4 dole) • klikabilni</div>
+        </div>
+
+        <div class="header-right">
+            <div class="pill" id="gameTimer">00:00</div>
+            <div class="pill" id="deathStatus">Status: 0 / 5 dead</div>
+        </div>
+    </header>
+
+    <main>
+      <section class="grid" id="topGrid">
+        <button class="slot" data-slot="1" aria-label="Slot 1">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 1</div>
+          </div>
+        </button>
+
+        <button class="slot" data-slot="2" aria-label="Slot 2">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 2</div>
+          </div>
+        </button>
+
+        <button class="slot" data-slot="3" aria-label="Slot 3">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 3</div>
+          </div>
+        </button>
+
+        <button class="slot" data-slot="4" aria-label="Slot 4">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 4</div>
+          </div>
+        </button>
+      </section>
+
+      <section class="grid" id="bottomGrid">
+        <button class="slot" data-slot="5" aria-label="Slot 5">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 5</div>
+          </div>
+        </button>
+
+        <button class="slot" data-slot="6" aria-label="Slot 6">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 6</div>
+          </div>
+        </button>
+
+        <button class="slot" data-slot="7" aria-label="Slot 7">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 7</div>
+          </div>
+        </button>
+
+        <button class="slot" data-slot="8" aria-label="Slot 8">
+          <div class="gas"></div>
+          <div class="slot-inner">
+            <div class="slot-id"><span class="dot"></span> Slot 8</div>
+          </div>
+        </button>
+      </section>
+    </main>
+
+    <footer>
+      <div>Footer • ovde kasnije može “HP”, timer, score, itd.</div>
+    </footer>
+  </div>
+
+
+  
+    <!-- GAME OVER POPUP -->
+    <div class="gameover-backdrop" id="gameOverBackdrop">
+        <div class="gameover-modal" role="dialog" aria-modal="true">
+        <div class="gameover-header">
+            <div class="gameover-title">
+            <h2>GAME OVER 🪦</h2>
+            <p>Dostigao si 5 smrti.</p>
+            </div>
+            <div class="gameover-badge">FART FACTORY</div>
+        </div>
+
+        <div class="gameover-body">
+            <div class="gameover-stats">
+            <div class="stat">
+                <div class="label">Vreme</div>
+                <div class="value" id="finalTime">00:00</div>
+            </div>
+            <div class="stat">
+                <div class="label">Deaths</div>
+                <div class="value" id="finalDeaths">0 / 5</div>
+            </div>
+            </div>
+
+            <div class="gameover-actions">
+            <button class="btn primary" id="restartBtn">Restart</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+  <script src="JAVASCRIPT/game.js"></script>
+</body>
+</html>
