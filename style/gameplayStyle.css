@@ -202,9 +202,36 @@ main{
       font-size:12px;
     }
 
+    #mobileStatsHost{
+      display:contents;
+    }
+
     @media (max-width: 720px){
-      .grid{ grid-template-columns: repeat(2, 1fr); }
+      .grid{ grid-template-columns: repeat(4, 1fr); }
       .slot{ height:120px; }
+
+      header{
+        justify-content:center;
+      }
+
+      footer{
+        flex-direction:column;
+        justify-content:center;
+        gap:10px;
+        text-align:center;
+      }
+
+      #mobileStatsHost{
+        display:flex;
+        justify-content:center;
+        width:100%;
+      }
+
+      .header-right{
+        margin-left:0;
+        justify-content:center;
+        width:100%;
+      }
     }
 
 

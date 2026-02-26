@@ -19,6 +19,27 @@ let gameOver = false;
 
 const deathStatusEl = document.getElementById("deathStatus");
 const timerEl = document.getElementById("gameTimer");
+const headerEl = document.querySelector("header");
+const headerRightEl = document.querySelector(".header-right");
+const mobileStatsHostEl = document.getElementById("mobileStatsHost");
+
+function placeStatusByViewport() {
+  if (!headerEl || !headerRightEl || !mobileStatsHostEl) return;
+
+  if (window.matchMedia("(max-width: 720px)").matches) {
+    if (headerRightEl.parentElement !== mobileStatsHostEl) {
+      mobileStatsHostEl.appendChild(headerRightEl);
+    }
+    return;
+  }
+
+  if (headerRightEl.parentElement !== headerEl) {
+    headerEl.appendChild(headerRightEl);
+  }
+}
+
+window.addEventListener("resize", placeStatusByViewport);
+placeStatusByViewport();
 
 // popup DOM (ako ga imaš)
 const gameOverBackdrop = document.getElementById("gameOverBackdrop");
