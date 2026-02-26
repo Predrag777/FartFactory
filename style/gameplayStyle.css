@@ -206,3 +206,45 @@ main{
   font-weight:700;
   color: rgba(255,255,255,0.95);
 }
+
+
+
+
+
+/*Constipation*/
+
+.constipation-overlay{
+  position:absolute;
+  inset:0;
+  display:none; /* uključi se kad je constipated */
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
+  pointer-events:none;
+  z-index: 6;
+}
+
+.slot.constipated{
+  outline: 2px solid rgba(255, 210, 120, 0.65);
+}
+
+.constipation-title{
+  font-weight: 800;
+  letter-spacing: .6px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.95);
+}
+
+.constipation-sub{
+  font-size: 11px;
+  color: rgba(255,255,255,0.70);
+}
+
+.constipation-progress{
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.92);
+}
