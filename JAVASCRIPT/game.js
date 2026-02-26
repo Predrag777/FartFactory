@@ -12,6 +12,7 @@ const MAX = 100;
 const BASE_SPEED = 10;       // osnovna brzina rasta (po sekundi)
 const CLICK_REDUCTION = 20;
 const RESPAWN_SECONDS = 5;
+const OVERPUMP_DEATH_THRESHOLD = -20;
 
 const DEATH_LIMIT = 5;
 const SIMULTANEOUS_DEAD_LIMIT = 3;
@@ -159,7 +160,8 @@ slots.forEach((slot) => {
 function setGasHeight(slot, value01to100) {
   const gas = slot.querySelector(".gas");
   if (!gas) return;
-  gas.style.height = value01to100 + "%";
+  const clamped = Math.max(0, Math.min(100, value01to100));
+  gas.style.height = clamped + "%";
 }
 
 // DEAD overlay helpers
@@ -392,7 +394,10 @@ window.addEventListener("pointerup", (e) => {
   // normal: tap <= 200ms
   if (dtMs <= TAP_MAX_MS) {
     pressures[i] -= CLICK_REDUCTION;
-    if (pressures[i] < 0) pressures[i] = 0;
+    if (pressures[i] < OVERPUMP_DEATH_THRESHOLD) {
+      killSlot(i);
+      return;
+    }
     setGasHeight(slots[i], pressures[i]);
   }
 }, { passive: true });
@@ -474,7 +479,10 @@ function update(dt) {
       return;
     }
 
-    if (pressures[i] < 0) pressures[i] = 0;
+    if (pressures[i] < OVERPUMP_DEATH_THRESHOLD) {
+      killSlot(i);
+      return;
+    }
 
     setGasHeight(slot, pressures[i]);
   });
