@@ -37,11 +37,14 @@
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid var(--border);
       border-radius:14px;
-      padding:12px 14px;
+      padding:16px 18px;
+      min-height:78px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       position:relative;
+      width:100vw;
+      margin-left:calc(50% - 50vw);
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
     }
 
@@ -57,7 +60,7 @@
     }
     header h1{
       font-family: "Arial Black", "Segoe UI", sans-serif;
-      font-size:clamp(24px, 4vw, 42px);
+      font-size:clamp(32px, 5.2vw, 56px);
       line-height:1;
       font-weight:900;
       margin:0;
@@ -75,10 +78,11 @@
     }
 
     .pill{
-      font-size:12px;
+      font-size:18px;
+      font-weight:700;
       color:var(--muted);
       border:1px solid var(--border);
-      padding:6px 10px;
+      padding:10px 16px;
       border-radius:999px;
       background: rgba(0,0,0,.18);
     }
