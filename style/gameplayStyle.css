@@ -207,8 +207,15 @@ main{
     }
 
     @media (max-width: 720px){
+      .app{ padding:8px; }
+
       .grid{ grid-template-columns: repeat(4, 1fr); }
-      .slot{ height:120px; }
+      .grid{ gap:8px; }
+      .slot{ height: clamp(170px, 42vw, 240px); }
+
+      main{
+        gap: clamp(24px, 8vw, 56px);
+      }
 
       header{
         justify-content:center;
