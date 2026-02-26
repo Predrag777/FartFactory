@@ -105,8 +105,13 @@ main{
       height:300px;
       border-radius:14px;
       border:1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-      overflow:hidden;
+
+    background-image: url("../UI/images/containerImage.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+      
+        overflow:hidden;
       cursor:pointer;
       user-select:none;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
@@ -135,7 +140,7 @@ main{
       gap:6px;
     }
 
-    
+
 
     .character{
       position:absolute;
