@@ -135,12 +135,27 @@ main{
       gap:6px;
     }
 
+    
+
+    .character{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      max-width:80%;
+      max-height:80%;
+      object-fit:contain;
+      pointer-events:none;
+    }
+
     .slot-id{
       font-size:12px;
       color: rgba(255,255,255,.85);
       display:flex;
       align-items:center;
       gap:8px;
+      position:relative;
+      z-index:2;
     }
     .gas{
         position:absolute;
