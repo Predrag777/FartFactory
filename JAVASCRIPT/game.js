@@ -14,6 +14,7 @@ const CLICK_REDUCTION = 20;
 const RESPAWN_SECONDS = 5;
 
 const DEATH_LIMIT = 5;
+const SIMULTANEOUS_DEAD_LIMIT = 3;
 let totalDeaths = 0;
 let gameOver = false;
 
@@ -97,11 +98,15 @@ const speeds = Array.from({ length: slots.length }, () => makeSpeed());
 // -----------------------------
 slots.forEach((slot) => {
   // DEAD overlay (🪦 + countdown)
+  const characterSrc = slot.querySelector(".character")?.getAttribute("src") || "";
   const deadOv = document.createElement("div");
   deadOv.className = "dead-overlay";
   deadOv.style.display = "none";
   deadOv.innerHTML = `
-    <div class="grave">🪦</div>
+    <div class="grave">
+      <img src="UI/images/grave.png" alt="grave" />
+      ${characterSrc ? `<img class="grave-icon" src="${characterSrc}" alt="" aria-hidden="true" />` : ""}
+    </div>
     <div class="countdown">5</div>
   `;
   slot.appendChild(deadOv);
@@ -240,7 +245,8 @@ function killSlot(i) {
   slots[i].disabled = true;
   showDeadOverlay(slots[i], respawnLeft[i]);
 
-  if (totalDeaths >= DEATH_LIMIT) {
+  const deadSlotsNow = dead.reduce((count, isDead) => count + (isDead ? 1 : 0), 0);
+  if (totalDeaths >= DEATH_LIMIT || deadSlotsNow >= SIMULTANEOUS_DEAD_LIMIT) {
     triggerGameOver();
   }
 }
