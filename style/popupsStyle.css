@@ -31,6 +31,7 @@
   padding: 18px;
   color: rgba(255,255,255,0.92);
   animation: popupFadeIn 0.25s ease;
+  font-family: 'SoupOfJustice', sans-serif;
 }
 
 @keyframes popupFadeIn{
@@ -44,57 +45,30 @@
   }
 }
 
-/* HEADER */
+/* CENTER TITLE */
 
-.gameover-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding-bottom:12px;
+.gameover-center{
+  text-align:center;
+  padding-bottom:18px;
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 .gameover-title{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.gameover-title h2{
   margin:0;
-  font-size:18px;
-  letter-spacing:.3px;
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:#fff;
 }
 
-.gameover-title p{
-  margin:0;
-  font-size:12px;
-  color:rgba(255,255,255,0.65);
-}
-
-.gameover-badge{
-  font-size:12px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(0,0,0,0.25);
-  white-space:nowrap;
-}
-
-/* BODY */
-
-.gameover-body{
-  padding-top:14px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
+/* STATS */
 
 .gameover-stats{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
+  padding-top:16px;
 }
 
 .stat{
@@ -112,28 +86,35 @@
 }
 
 .stat .value{
-  font-size:16px;
+  font-size:20px;
   font-weight:700;
 }
 
 /* ACTIONS */
 
+/* ACTIONS */
+
 .gameover-actions{
   display:flex;
-  justify-content:flex-end;
-  gap:10px;
-  padding-top:6px;
+  justify-content:center;
+  gap:12px;
+  padding-top:16px;
 }
 
 .btn{
   border:1px solid rgba(255,255,255,0.15);
   background:rgba(0,0,0,0.30);
   color:rgba(255,255,255,0.92);
-  padding:10px 14px;
+  padding:12px 28px;
   border-radius:14px;
   cursor:pointer;
-  font-weight:600;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
   transition: all 0.15s ease;
+  min-width:120px;
+  font-family: 'SoupOfJustice', sans-serif;
 }
 
 .btn:hover{
@@ -149,5 +130,15 @@
 
 .btn.primary:hover{
   filter:brightness(1.05);
+  transform:translateY(-1px);
+}
+
+.btn.secondary{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.2);
+}
+
+.btn.secondary:hover{
+  background:rgba(255,255,255,0.12);
   transform:translateY(-1px);
 }

@@ -2,7 +2,7 @@
 <html lang="sr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Gas Slots UI</title>
   <link rel="stylesheet" href="style/gameplayStyle.css" />
    <link rel="stylesheet" href="style/popupsStyle.css" />
@@ -16,17 +16,23 @@
 
         <div class="header-right">
             <div class="pill" id="gameTimer">00:00</div>
-            <div class="pill" id="deathStatus">Status: 0 / 5 dead</div>
+            <div class="pill fart-pill" id="fartCounter">💨 0</div>
         </div>
     </header>
 
     <main>
+      <!-- Constipation alert banners -->
+      <div class="constipation-alert constipation-alert-top" id="constAlertTop">
+        <span class="constipation-alert-text">⚠ CONSTIPATION ⚠</span>
+        <div class="constipation-alert-arrow">▼</div>
+      </div>
+
       <section class="grid" id="topGrid">
         <button class="slot" data-slot="1" aria-label="Slot 1">
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart1.png" alt="Fart 1" />
-            <div class="slot-id"><span class="dot"></span> Slot 1</div>
+            <div class="slot-id"><span class="dot"></span> Baby Farts</div>
           </div>
         </button>
 
@@ -34,7 +40,7 @@
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart2.png" alt="Fart 2" />
-            <div class="slot-id"><span class="dot"></span> Slot 2</div>
+            <div class="slot-id"><span class="dot"></span> Jazz Farts</div>
           </div>
         </button>
 
@@ -42,7 +48,7 @@
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart3.png" alt="Fart 3" />
-            <div class="slot-id"><span class="dot"></span> Slot 3</div>
+            <div class="slot-id"><span class="dot"></span> Polka</div>
           </div>
         </button>
 
@@ -50,10 +56,17 @@
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart4.png" alt="Fart 4" />
-            <div class="slot-id"><span class="dot"></span> Slot 4</div>
+            <div class="slot-id"><span class="dot"></span> Grandpa</div>
           </div>
         </button>
       </section>
+
+      <div class="tube-row tube-row-top" aria-hidden="true">
+        <div class="tube" data-slot="1"><div class="tube-fill"></div></div>
+        <div class="tube" data-slot="2"><div class="tube-fill"></div></div>
+        <div class="tube" data-slot="3"><div class="tube-fill"></div></div>
+        <div class="tube" data-slot="4"><div class="tube-fill"></div></div>
+      </div>
 
       <section class="middle-container" id="middleDeathsContainer" aria-label="Deaths progress">
         <div class="middle-gas" id="middleGasFill"></div>
@@ -63,12 +76,19 @@
         </div>
       </section>
 
+      <div class="tube-row tube-row-bottom" aria-hidden="true">
+        <div class="tube" data-slot="5"><div class="tube-fill"></div></div>
+        <div class="tube" data-slot="6"><div class="tube-fill"></div></div>
+        <div class="tube" data-slot="7"><div class="tube-fill"></div></div>
+        <div class="tube" data-slot="8"><div class="tube-fill"></div></div>
+      </div>
+
       <section class="grid" id="bottomGrid">
         <button class="slot" data-slot="5" aria-label="Slot 5">
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart5.png" alt="Fart 5" />
-            <div class="slot-id"><span class="dot"></span> Slot 5</div>
+            <div class="slot-id"><span class="dot"></span> Teddy Bear</div>
           </div>
         </button>
 
@@ -76,7 +96,7 @@
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart6.png" alt="Fart 6" />
-            <div class="slot-id"><span class="dot"></span> Slot 6</div>
+            <div class="slot-id"><span class="dot"></span> Walkie Talkie</div>
           </div>
         </button>
 
@@ -84,7 +104,7 @@
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart7.png" alt="Fart 7" />
-            <div class="slot-id"><span class="dot"></span> Slot 7</div>
+            <div class="slot-id"><span class="dot"></span> Wedding</div>
           </div>
         </button>
 
@@ -92,10 +112,16 @@
           <div class="gas"></div>
           <div class="slot-inner">
             <img class="character" src="UI/characters/fart8.png" alt="Fart 8" />
-            <div class="slot-id"><span class="dot"></span> Slot 8</div>
+            <div class="slot-id"><span class="dot"></span> Gym</div>
           </div>
         </button>
       </section>
+
+      <!-- Constipation alert bottom -->
+      <div class="constipation-alert constipation-alert-bottom" id="constAlertBottom">
+        <div class="constipation-alert-arrow">▲</div>
+        <span class="constipation-alert-text">⚠ CONSTIPATION ⚠</span>
+      </div>
     </main>
 
     <footer>
@@ -108,30 +134,27 @@
     <!-- GAME OVER POPUP -->
     <div class="gameover-backdrop" id="gameOverBackdrop">
         <div class="gameover-modal" role="dialog" aria-modal="true">
-        <div class="gameover-header">
-            <div class="gameover-title">
-            <h2>GAME OVER 🪦</h2>
-            <p>Dostigao si 5 smrti.</p>
-            </div>
-            <div class="gameover-badge">FART FACTORY</div>
+
+        <div class="gameover-center">
+            <h2 class="gameover-title">GAME OVER</h2>
         </div>
 
-        <div class="gameover-body">
-            <div class="gameover-stats">
+        <div class="gameover-stats">
             <div class="stat">
-                <div class="label">Vreme</div>
+                <div class="label">TIME</div>
                 <div class="value" id="finalTime">00:00</div>
             </div>
             <div class="stat">
-                <div class="label">Deaths</div>
-                <div class="value" id="finalDeaths">0 / 5</div>
-            </div>
-            </div>
-
-            <div class="gameover-actions">
-            <button class="btn primary" id="restartBtn">Restart</button>
+                <div class="label">FARTS</div>
+                <div class="value" id="finalFarts">0</div>
             </div>
         </div>
+
+        <div class="gameover-actions">
+            <button class="btn primary" id="restartBtn">PLAY AGAIN</button>
+            <button class="btn secondary" id="exitBtn">EXIT</button>
+        </div>
+
         </div>
     </div>
 

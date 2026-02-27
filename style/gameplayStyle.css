@@ -1,3 +1,10 @@
+    @font-face {
+      font-family: 'SoupOfJustice';
+      src: url('../fonts/soupofjustice.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     :root{
       --bg: #0b0f14;
       --panel: #111826;
@@ -10,11 +17,11 @@
       --accent: #5eead4;
     }
 
-    *{ box-sizing:border-box; }
+    *{ box-sizing:border-box; font-family:inherit; }
     html,body{ height:100%; }
     body{
     margin:0;
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+    font-family: 'SoupOfJustice', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
     background: var(--bg) url("../UI/images/backgroundMainV2.png") center / cover no-repeat;
     color:var(--text);
 
@@ -58,7 +65,7 @@
       text-align:center;
     }
     header h1{
-      font-family: "Arial Black", "Segoe UI", sans-serif;
+      font-family: 'SoupOfJustice', "Arial Black", "Segoe UI", sans-serif;
       font-size:clamp(32px, 5.2vw, 56px);
       line-height:1;
       font-weight:900;
@@ -85,13 +92,37 @@
       background: rgba(0,0,0,.18);
     }
 
-main{
-  flex:1; /* zauzima prostor između header i footer */
+    #gameTimer{
+      font-size:30px;
+      font-weight:900;
+      line-height:1;
+      letter-spacing:1.2px;
+      color:#ecfdf5;
+      border:2px solid rgba(34,197,94,.95);
+      background: rgba(22,163,74,.28);
+      box-shadow: 0 0 18px rgba(34,197,94,.52), inset 0 0 0 1px rgba(0,0,0,.28);
+      padding:14px 22px;
+    }
 
+    .fart-pill{
+      font-size:22px;
+      font-weight:800;
+      line-height:1;
+      letter-spacing:.6px;
+      color:#fef9c3;
+      border:2px solid rgba(234,179,8,.75);
+      background: rgba(161,98,7,.22);
+      box-shadow: 0 0 14px rgba(234,179,8,.35), inset 0 0 0 1px rgba(0,0,0,.25);
+      padding:12px 18px;
+    }
+
+main{
+  flex:1;
   display:flex;
   flex-direction:column;
-
-  justify-content:center;  /* vertikalni centar */
+  justify-content:center;
+  gap:0;
+  position:relative;
 }
 
     .grid{
@@ -103,7 +134,7 @@ main{
 
     .middle-container{
       width:calc(100% + 120px);
-      margin:14px -60px;
+      margin:0 -60px;
       height:68px;
       border-radius:14px;
       border:1px solid var(--border);
@@ -113,6 +144,75 @@ main{
         linear-gradient(90deg, rgba(0,0,0,.22), rgba(255,255,255,.05), rgba(0,0,0,.22)),
         radial-gradient(500px 120px at 50% 50%, rgba(94,234,212,.12), rgba(0,0,0,0));
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+    }
+
+    /* ---- TUBES ---- */
+    .tube-row{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+      width:100%;
+      height:28px;
+      margin:-14px 0;
+      position:relative;
+      z-index:2;
+      pointer-events:none;
+    }
+
+    .tube{
+      position:relative;
+      margin:0 auto;
+      width:24px;
+      height:calc(100% + 28px);
+      margin-top:-14px;
+      border-radius:3px;
+      overflow:hidden;
+      border-left:1px solid rgba(255,255,255,.15);
+      border-right:1px solid rgba(0,0,0,.35);
+      box-shadow:
+        inset 3px 0 6px rgba(255,255,255,.08),
+        inset -3px 0 6px rgba(0,0,0,.3),
+        0 0 10px rgba(94,234,212,.12);
+    }
+
+    .tube::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:3px;
+      background:
+        linear-gradient(90deg,
+          rgba(30,30,30,.7),
+          rgba(100,100,100,.4) 30%,
+          rgba(255,255,255,.14) 50%,
+          rgba(100,100,100,.4) 70%,
+          rgba(30,30,30,.7));
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .tube-fill{
+      position:absolute;
+      left:0;
+      width:100%;
+      height:0%;
+      transition:height 0.1s linear;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .tube-fill.death-burst{
+      transition:height 0.3s ease-in !important;
+    }
+
+    .tube-row-top .tube-fill{
+      top:0;
+      background:linear-gradient(to bottom, #22c55e, #16a34a);
+    }
+
+    .tube-row-bottom .tube-fill{
+      bottom:0;
+      background:linear-gradient(to top, #22c55e, #16a34a);
     }
 
     .middle-gas{
@@ -268,6 +368,19 @@ main{
         margin:10px 0;
       }
 
+      .tube-row{
+        height:22px;
+        gap:8px;
+        margin:-11px 0;
+      }
+
+      .tube{
+        width:18px;
+        height:calc(100% + 22px);
+        margin-top:-11px;
+        overflow:hidden;
+      }
+
       .middle-content{
         padding:0 12px;
       }
@@ -301,6 +414,30 @@ main{
         margin-left:0;
         justify-content:center;
         width:100%;
+      }
+
+      /* Constipation mobile */
+      .constipation-title{
+        font-size: 10px;
+        letter-spacing: 0.8px;
+      }
+
+      .constipation-icon{
+        width: 35%;
+        max-height: 35%;
+      }
+
+      .constipation-timer{
+        font-size: 16px;
+      }
+
+      .constipation-sub{
+        font-size: 8px;
+      }
+
+      .constipation-overlay{
+        padding-top: 6px;
+        gap: 2px;
       }
     }
 
@@ -367,15 +504,21 @@ main{
 
 /*Constipation*/
 
+@keyframes constipation-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
 .constipation-overlay{
   position:absolute;
   inset:0;
-  display:none; /* uključi se kad je constipated */
+  display:none;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
-  gap:6px;
-  background: rgba(0,0,0,0.45);
+  justify-content:flex-start;
+  padding-top:12px;
+  gap:4px;
+  background: rgba(0,0,0,0.55);
   backdrop-filter: blur(2px);
   pointer-events:none;
   z-index: 6;
@@ -386,19 +529,96 @@ main{
 }
 
 .constipation-title{
-  font-weight: 800;
-  letter-spacing: .6px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.95);
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: rgba(255, 210, 120, 0.95);
+  text-shadow: 0 0 10px rgba(255, 170, 50, 0.5);
+}
+
+.constipation-icon{
+  width: 45%;
+  max-height: 45%;
+  object-fit: contain;
+  animation: constipation-pulse 0.8s ease-in-out infinite;
+  filter: sepia(0.4) saturate(1.5) hue-rotate(-10deg) brightness(0.9);
+}
+
+.constipation-timer{
+  font-size: 22px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 0 8px rgba(255, 210, 120, 0.6);
+  letter-spacing: 0.5px;
 }
 
 .constipation-sub{
-  font-size: 11px;
-  color: rgba(255,255,255,0.70);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
 }
 
-.constipation-progress{
+/* Constipation alert banner */
+@keyframes constipation-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.constipation-alert{
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 0;
+  z-index: 10;
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.constipation-alert-top{
+  top: 0;
+}
+
+.constipation-alert-bottom{
+  bottom: 0;
+}
+
+.constipation-alert.active{
+  display: flex;
+  animation: constipation-flash 0.5s ease-in-out infinite;
+}
+
+.constipation-alert-text{
   font-size: 16px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.92);
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ff4444;
+  text-shadow:
+    0 0 10px rgba(255, 68, 68, 0.8),
+    0 0 20px rgba(255, 68, 68, 0.5),
+    0 0 40px rgba(255, 68, 68, 0.3);
+}
+
+.constipation-alert-arrow{
+  font-size: 20px;
+  color: #ff4444;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+  transition: margin-left 0.2s ease;
+}
+
+@media (max-width: 720px){
+  .constipation-alert-text{
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
+  .constipation-alert-arrow{
+    font-size: 16px;
+  }
 }

@@ -1,5 +1,28 @@
 const slots = document.querySelectorAll(".slot");
 
+window.addEventListener("wheel", (event) => {
+  if (event.ctrlKey) event.preventDefault();
+}, { passive: false });
+
+window.addEventListener("keydown", (event) => {
+  if (!event.ctrlKey) return;
+  if (event.key === "+" || event.key === "=" || event.key === "-" || event.key === "0") {
+    event.preventDefault();
+  }
+});
+
+window.addEventListener("gesturestart", (event) => {
+  event.preventDefault();
+});
+
+window.addEventListener("gesturechange", (event) => {
+  event.preventDefault();
+});
+
+window.addEventListener("gestureend", (event) => {
+  event.preventDefault();
+});
+
 const CLICK_SOUNDS = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`);
 const DEATH_SOUNDS = ["deathSounds/death1.mp3"];
 const MASTER_VOLUME = 0.5;
@@ -79,15 +102,44 @@ const RESPAWN_SECONDS = 5;
 const DEATH_LIMIT = 5;
 const SIMULTANEOUS_DEAD_LIMIT = 3;
 let totalDeaths = 0;
+let totalFarts = 0;
 let gameOver = false;
 
 const deathStatusEl = document.getElementById("deathStatus");
 const middleGasFillEl = document.getElementById("middleGasFill");
 const middleDeathsValueEl = document.getElementById("middleDeathsValue");
 const timerEl = document.getElementById("gameTimer");
+const fartCounterEl = document.getElementById("fartCounter");
 const headerEl = document.querySelector("header");
 const headerRightEl = document.querySelector(".header-right");
 const mobileStatsHostEl = document.getElementById("mobileStatsHost");
+
+// Tube fill elements (map slotIndex → fill element)
+const tubeFills = [];
+document.querySelectorAll('.tube-row-top .tube').forEach((tube, i) => {
+  tubeFills[i] = tube.querySelector('.tube-fill');
+});
+document.querySelectorAll('.tube-row-bottom .tube').forEach((tube, i) => {
+  tubeFills[i + 4] = tube.querySelector('.tube-fill');
+});
+
+function updateTubeFill(slotIndex, pressure) {
+  const fill = tubeFills[slotIndex];
+  if (!fill) return;
+  const pct = Math.max(0, Math.min(100, pressure));
+  fill.style.height = pct + '%';
+
+  const ratio = pct / MAX;
+  const hue = 120 - (120 * ratio);
+  const c1 = `hsl(${hue}, 78%, 40%)`;
+  const c2 = `hsl(${hue}, 92%, 58%)`;
+
+  if (slotIndex < 4) {
+    fill.style.background = `linear-gradient(to bottom, ${c2}, ${c1})`;
+  } else {
+    fill.style.background = `linear-gradient(to top, ${c2}, ${c1})`;
+  }
+}
 
 function placeStatusByViewport() {
   if (!headerEl || !headerRightEl || !mobileStatsHostEl) return;
@@ -110,8 +162,9 @@ placeStatusByViewport();
 // popup DOM (ako ga imaš)
 const gameOverBackdrop = document.getElementById("gameOverBackdrop");
 const restartBtn = document.getElementById("restartBtn");
+const exitBtn = document.getElementById("exitBtn");
 const finalTimeEl = document.getElementById("finalTime");
-const finalDeathsEl = document.getElementById("finalDeaths");
+const finalFartsEl = document.getElementById("finalFarts");
 
 // TIMER
 let elapsedSec = 0;
@@ -124,8 +177,9 @@ function formatMMSS(totalSeconds){
 }
 
 function updateDeathStatus() {
-  if (!deathStatusEl) return;
-  deathStatusEl.textContent = `Status: ${totalDeaths} / ${DEATH_LIMIT} deaths`;
+  if (deathStatusEl) {
+    deathStatusEl.textContent = `Status: ${totalDeaths} / ${DEATH_LIMIT} deaths`;
+  }
 
   if (middleDeathsValueEl) {
     middleDeathsValueEl.textContent = `${totalDeaths} / ${DEATH_LIMIT}`;
@@ -142,7 +196,7 @@ if (timerEl) timerEl.textContent = "00:00";
 // -----------------------------
 // CONSTIPATION CONFIG
 // -----------------------------
-const CONST_START_AFTER_SEC = 5;   // posle 10s
+const CONST_START_AFTER_SEC = 0;   // odmah na pocetku
 const CONST_CHECK_MIN_SEC = 2;     // na 10-20s proverava
 const CONST_CHECK_MAX_SEC = 10;
 const CONST_HOLD_TO_CURE_MS = 1000; // hold 1s
@@ -185,14 +239,14 @@ slots.forEach((slot) => {
   `;
   slot.appendChild(deadOv);
 
-  // CONSTIPATION overlay (no images)
+  // CONSTIPATION overlay (with pulsing character)
   const constOv = document.createElement("div");
   constOv.className = "constipation-overlay";
   constOv.style.display = "none";
   constOv.innerHTML = `
-    <div class="constipation-title">CONSTIPATION</div>
-    <div class="constipation-sub">Hold 1s to cure</div>
-    <div class="constipation-progress">0%</div>
+    ${characterSrc ? `<img class="constipation-icon" src="${characterSrc}" alt="" aria-hidden="true" />` : ""}
+    <div class="constipation-timer">0.0s</div>
+    <div class="constipation-sub">Hold for 1 second</div>
   `;
   slot.appendChild(constOv);
 });
@@ -224,6 +278,38 @@ function hideDeadOverlay(slot) {
   overlay.style.display = "none";
 }
 
+// Constipation alert banners
+const constAlertTop = document.getElementById('constAlertTop');
+const constAlertBottom = document.getElementById('constAlertBottom');
+
+function positionConstipationAlert(i) {
+  const isTop = i < 4;
+  const alert = isTop ? constAlertTop : constAlertBottom;
+  const otherAlert = isTop ? constAlertBottom : constAlertTop;
+
+  if (otherAlert) otherAlert.classList.remove('active');
+  if (!alert) return;
+
+  alert.classList.add('active');
+
+  // Position arrow to point at the center of the constipated slot
+  const slot = slots[i];
+  const arrow = alert.querySelector('.constipation-alert-arrow');
+  if (slot && arrow) {
+    const slotRect = slot.getBoundingClientRect();
+    const alertRect = alert.getBoundingClientRect();
+    const slotCenter = slotRect.left + slotRect.width / 2;
+    const alertCenter = alertRect.left + alertRect.width / 2;
+    const offset = slotCenter - alertCenter;
+    arrow.style.transform = `translateX(${offset}px)`;
+  }
+}
+
+function hideConstipationAlert() {
+  if (constAlertTop) constAlertTop.classList.remove('active');
+  if (constAlertBottom) constAlertBottom.classList.remove('active');
+}
+
 // CONST overlay helpers
 function showConstipation(i) {
   const slot = slots[i];
@@ -232,6 +318,7 @@ function showConstipation(i) {
   overlay.style.display = "flex";
   slot.classList.add("constipated");
   updateConstipationProgress(i);
+  positionConstipationAlert(i);
 }
 function hideConstipation(i) {
   const slot = slots[i];
@@ -239,6 +326,7 @@ function hideConstipation(i) {
   if (!overlay) return;
   overlay.style.display = "none";
   slot.classList.remove("constipated");
+  hideConstipationAlert();
 }
 function updateConstipationProgress(i) {
   const slot = slots[i];
@@ -246,9 +334,23 @@ function updateConstipationProgress(i) {
   if (!overlay) return;
 
   const p = Math.max(0, Math.min(1, holdMs[i] / CONST_HOLD_TO_CURE_MS));
-  const pct = Math.round(p * 100);
-  const prog = overlay.querySelector(".constipation-progress");
-  if (prog) prog.textContent = `${pct}%`;
+  const elapsed = (holdMs[i] / 1000).toFixed(1);
+  const timerEl = overlay.querySelector(".constipation-timer");
+  if (timerEl) timerEl.textContent = `${elapsed}s`;
+
+  // When holding, stop the pulse animation on the icon
+  const icon = overlay.querySelector(".constipation-icon");
+  if (icon) {
+    if (holdMs[i] > 0) {
+      icon.style.animationPlayState = 'paused';
+      icon.style.transform = `scale(${1 + 0.15 * (1 - p)})`;
+      icon.style.opacity = 1 - (0.3 * p);
+    } else {
+      icon.style.animationPlayState = '';
+      icon.style.transform = '';
+      icon.style.opacity = '';
+    }
+  }
 }
 
 function triggerConstipation() {
@@ -283,7 +385,7 @@ function cureConstipation(i) {
 function openGameOverPopup() {
   if (!gameOverBackdrop) return;
   if (finalTimeEl) finalTimeEl.textContent = formatMMSS(elapsedSec);
-  if (finalDeathsEl) finalDeathsEl.textContent = `${totalDeaths} / ${DEATH_LIMIT}`;
+  if (finalFartsEl) finalFartsEl.textContent = totalFarts;
   gameOverBackdrop.classList.add("active");
 }
 function closeGameOverPopup() {
@@ -326,10 +428,38 @@ function killSlot(i) {
   playRandomDeathSound();
 
   totalDeaths += 1;
-  updateDeathStatus();
 
   pressures[i] = 0;
   setGasHeight(slots[i], 0);
+
+  // Death burst: fill tube to 100% in 0.3s
+  const deathFill = tubeFills[i];
+  if (deathFill) {
+    deathFill.classList.add('death-burst');
+    deathFill.style.height = '100%';
+    const c1 = `hsl(0, 78%, 40%)`;
+    const c2 = `hsl(0, 92%, 58%)`;
+    if (i < 4) {
+      deathFill.style.background = `linear-gradient(to bottom, ${c2}, ${c1})`;
+    } else {
+      deathFill.style.background = `linear-gradient(to top, ${c2}, ${c1})`;
+    }
+
+    // After tube fills (0.3s) → update central container, then instantly clear tube
+    setTimeout(() => {
+      updateDeathStatus();
+      deathFill.classList.remove('death-burst');
+      deathFill.style.transition = 'none';
+      deathFill.style.height = '0%';
+      deathFill.style.background = 'transparent';
+      // Force reflow so the instant reset is applied before restoring transition
+      deathFill.offsetHeight;
+      deathFill.style.transition = '';
+      deathFill.style.background = '';
+    }, 300);
+  } else {
+    updateDeathStatus();
+  }
 
   slots[i].disabled = true;
   showDeadOverlay(slots[i], respawnLeft[i]);
@@ -347,6 +477,13 @@ function reviveSlot(i) {
   dead[i] = false;
   respawnLeft[i] = 0;
 
+  // Reset tube from death burst
+  const reviveFill = tubeFills[i];
+  if (reviveFill) {
+    reviveFill.classList.remove('death-burst');
+    reviveFill.style.height = '0%';
+  }
+
   slots[i].disabled = false;
   hideDeadOverlay(slots[i]);
 }
@@ -357,6 +494,8 @@ function reviveSlot(i) {
 function restartGame() {
   gameOver = false;
   totalDeaths = 0;
+  totalFarts = 0;
+  if (fartCounterEl) fartCounterEl.textContent = '💨 0';
   updateDeathStatus();
 
   elapsedSec = 0;
@@ -378,6 +517,13 @@ function restartGame() {
     slot.disabled = false;
     hideDeadOverlay(slot);
     setGasHeight(slot, 0);
+
+    // Reset tube (remove death burst if active)
+    const resetFill = tubeFills[i];
+    if (resetFill) {
+      resetFill.classList.remove('death-burst');
+    }
+    updateTubeFill(i, 0);
   });
 
   for (let i = 0; i < speeds.length; i++) speeds[i] = makeSpeed();
@@ -387,6 +533,12 @@ function restartGame() {
   closeGameOverPopup();
 }
 if (restartBtn) restartBtn.addEventListener("click", restartGame);
+if (exitBtn) exitBtn.addEventListener("click", () => {
+  closeGameOverPopup();
+  window.close();
+  // fallback: go to a blank page if window.close() is blocked
+  window.location.href = "about:blank";
+});
 
 // -----------------------------
 // TAP vs HOLD (pointer events)
@@ -439,6 +591,8 @@ window.addEventListener("pointerup", (e) => {
   // normal: tap <= 200ms
   if (dtMs <= TAP_MAX_MS) {
     pressures[i] -= CLICK_REDUCTION;
+    totalFarts++;
+    if (fartCounterEl) fartCounterEl.textContent = `💨 ${totalFarts}`;
 
     if (pressures[i] < UNDERFLOW_DEATH_THRESHOLD) {
       killSlot(i);
