@@ -262,6 +262,10 @@ function setGasHeight(slot, value01to100) {
   const colorBottom = `hsl(${hue}, 78%, 40%)`;
   const colorTop = `hsl(${hue}, 92%, 58%)`;
   gas.style.background = `linear-gradient(to top, ${colorBottom}, ${colorTop})`;
+
+  // Update wave color to match gas surface
+  const wave = gas.querySelector(".gas-wave");
+  if (wave) wave.style.background = colorTop;
 }
 
 // DEAD overlay helpers
@@ -386,6 +390,17 @@ function openGameOverPopup() {
   if (!gameOverBackdrop) return;
   if (finalTimeEl) finalTimeEl.textContent = formatMMSS(elapsedSec);
   if (finalFartsEl) finalFartsEl.textContent = totalFarts;
+
+  // High score check (based on time survived)
+  const badge = document.getElementById("highscoreBadge");
+  const prevBest = parseInt(localStorage.getItem("fartFactory_highScore") || "0", 10);
+  if (elapsedSec > prevBest) {
+    localStorage.setItem("fartFactory_highScore", String(elapsedSec));
+    if (badge) badge.style.display = "block";
+  } else {
+    if (badge) badge.style.display = "none";
+  }
+
   gameOverBackdrop.classList.add("active");
 }
 function closeGameOverPopup() {
@@ -538,6 +553,11 @@ if (exitBtn) exitBtn.addEventListener("click", () => {
   window.close();
   // fallback: go to a blank page if window.close() is blocked
   window.location.href = "about:blank";
+});
+
+// Close modal on backdrop tap (outside the modal)
+if (gameOverBackdrop) gameOverBackdrop.addEventListener("click", (e) => {
+  if (e.target === gameOverBackdrop) closeGameOverPopup();
 });
 
 // -----------------------------
