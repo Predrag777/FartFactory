@@ -82,6 +82,8 @@ let totalDeaths = 0;
 let gameOver = false;
 
 const deathStatusEl = document.getElementById("deathStatus");
+const middleGasFillEl = document.getElementById("middleGasFill");
+const middleDeathsValueEl = document.getElementById("middleDeathsValue");
 const timerEl = document.getElementById("gameTimer");
 const headerEl = document.querySelector("header");
 const headerRightEl = document.querySelector(".header-right");
@@ -124,6 +126,15 @@ function formatMMSS(totalSeconds){
 function updateDeathStatus() {
   if (!deathStatusEl) return;
   deathStatusEl.textContent = `Status: ${totalDeaths} / ${DEATH_LIMIT} deaths`;
+
+  if (middleDeathsValueEl) {
+    middleDeathsValueEl.textContent = `${totalDeaths} / ${DEATH_LIMIT}`;
+  }
+
+  if (middleGasFillEl) {
+    const fillPercent = Math.max(0, Math.min(100, (totalDeaths / DEATH_LIMIT) * 100));
+    middleGasFillEl.style.width = `${fillPercent}%`;
+  }
 }
 updateDeathStatus();
 if (timerEl) timerEl.textContent = "00:00";
@@ -191,6 +202,12 @@ function setGasHeight(slot, value01to100) {
   if (!gas) return;
   const visualValue = Math.max(0, Math.min(MAX, value01to100));
   gas.style.height = visualValue + "%";
+
+  const ratio = visualValue / MAX;
+  const hue = 120 - (120 * ratio);
+  const colorBottom = `hsl(${hue}, 78%, 40%)`;
+  const colorTop = `hsl(${hue}, 92%, 58%)`;
+  gas.style.background = `linear-gradient(to top, ${colorBottom}, ${colorTop})`;
 }
 
 // DEAD overlay helpers

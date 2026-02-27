@@ -101,6 +101,55 @@ main{
       width:100%;
     }
 
+    .middle-container{
+      width:calc(100% + 120px);
+      margin:14px -60px;
+      height:68px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.22), rgba(255,255,255,.05), rgba(0,0,0,.22)),
+        radial-gradient(500px 120px at 50% 50%, rgba(94,234,212,.12), rgba(0,0,0,0));
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+    }
+
+    .middle-gas{
+      position:absolute;
+      inset:0 auto 0 0;
+      width:0%;
+      background:linear-gradient(90deg, #16a34a, #22c55e);
+      transition:width .2s linear;
+      z-index:0;
+    }
+
+    .middle-content{
+      position:relative;
+      z-index:1;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      padding:0 18px;
+      font-weight:800;
+      letter-spacing:.3px;
+    }
+
+    .middle-value{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      color:rgba(255,255,255,.95);
+      font-size:18px;
+    }
+
+    .middle-skull{
+      color:rgba(255,255,255,.95);
+      font-size:20px;
+      line-height:1;
+    }
+
     .row-label{
       font-size:12px;
       color:var(--muted);
@@ -212,6 +261,20 @@ main{
       .grid{ grid-template-columns: repeat(4, 1fr); }
       .grid{ gap:8px; }
       .slot{ height: clamp(200px, 50vw, 240px); }
+
+      .middle-container{
+        width:100%;
+        height:50px;
+        margin:10px 0;
+      }
+
+      .middle-content{
+        padding:0 12px;
+      }
+
+      .middle-value{
+        font-size:16px;
+      }
 
       main{
         gap: clamp(24px, 8vw, 56px);
