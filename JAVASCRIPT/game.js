@@ -1,5 +1,53 @@
 const slots = document.querySelectorAll(".slot");
 
+const CLICK_SOUNDS = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`);
+const backgroundMusic = new Audio("backgroundSounds/instrumental.mp3");
+const backgroundMusicDanger = new Audio("backgroundSounds/instrumental2.mp3");
+const backgroundMusicCritical = new Audio("backgroundSounds/osinatoDmol.mp3");
+
+backgroundMusic.loop = true;
+backgroundMusicDanger.loop = true;
+backgroundMusicCritical.loop = true;
+
+let activeBackgroundTrack = 1;
+
+function playBackgroundTrack(trackNumber) {
+  const getTrackByNumber = (n) => {
+    if (n === 3) return backgroundMusicCritical;
+    if (n === 2) return backgroundMusicDanger;
+    return backgroundMusic;
+  };
+
+  const nextTrack = getTrackByNumber(trackNumber);
+  const currentTrack = getTrackByNumber(activeBackgroundTrack);
+
+  if (currentTrack !== nextTrack) {
+    currentTrack.pause();
+    currentTrack.currentTime = 0;
+  }
+
+  nextTrack.currentTime = 0;
+
+  nextTrack.play().catch(() => {});
+  activeBackgroundTrack = trackNumber;
+}
+
+function playRandomClickSound() {
+  const randomSrc = CLICK_SOUNDS[Math.floor(Math.random() * CLICK_SOUNDS.length)];
+  const audio = new Audio(randomSrc);
+  audio.play().catch(() => {});
+}
+
+playBackgroundTrack(1);
+window.addEventListener("pointerdown", () => {
+  const currentTrack = activeBackgroundTrack === 3
+    ? backgroundMusicCritical
+    : activeBackgroundTrack === 2
+      ? backgroundMusicDanger
+      : backgroundMusic;
+  if (currentTrack.paused) currentTrack.play().catch(() => {});
+}, { once: true, passive: true });
+
 const pressures = new Array(slots.length).fill(0);
 const dead = new Array(slots.length).fill(false);
 const respawnLeft = new Array(slots.length).fill(0);
@@ -12,7 +60,6 @@ const MAX = 100;
 const BASE_SPEED = 10;       // osnovna brzina rasta (po sekundi)
 const CLICK_REDUCTION = 20;
 const RESPAWN_SECONDS = 5;
-const OVERPUMP_DEATH_THRESHOLD = -20;
 
 const DEATH_LIMIT = 5;
 const SIMULTANEOUS_DEAD_LIMIT = 3;
@@ -75,39 +122,6 @@ const CONST_CHECK_MAX_SEC = 10;
 const CONST_HOLD_TO_CURE_MS = 1000; // hold 1s
 const CONST_CURE_PRESSURE = 10;     // posle cure pressure = 30%
 
-const SOUND_FILES = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`);
-let holdLoopAudio = null;
-
-function pickRandomSoundSrc() {
-  if (!SOUND_FILES.length) return null;
-  const idx = Math.floor(Math.random() * SOUND_FILES.length);
-  return SOUND_FILES[idx];
-}
-
-function playRandomTapSound() {
-  const src = pickRandomSoundSrc();
-  if (!src) return;
-  const audio = new Audio(src);
-  audio.play().catch(() => {});
-}
-
-function stopHoldLoopSound() {
-  if (!holdLoopAudio) return;
-  holdLoopAudio.pause();
-  holdLoopAudio.currentTime = 0;
-  holdLoopAudio = null;
-}
-
-function startRandomHoldLoopSound() {
-  stopHoldLoopSound();
-  const src = pickRandomSoundSrc();
-  if (!src) return;
-
-  holdLoopAudio = new Audio(src);
-  holdLoopAudio.loop = true;
-  holdLoopAudio.play().catch(() => {});
-}
-
 function rand(a, b){ return a + Math.random() * (b - a); }
 
 let nextConstipationCheck = CONST_START_AFTER_SEC + rand(CONST_CHECK_MIN_SEC, CONST_CHECK_MAX_SEC);
@@ -160,8 +174,7 @@ slots.forEach((slot) => {
 function setGasHeight(slot, value01to100) {
   const gas = slot.querySelector(".gas");
   if (!gas) return;
-  const clamped = Math.max(0, Math.min(100, value01to100));
-  gas.style.height = clamped + "%";
+  gas.style.height = value01to100 + "%";
 }
 
 // DEAD overlay helpers
@@ -226,7 +239,6 @@ function cureConstipation(i) {
   constipated[i] = false;
   holdMs[i] = 0;
   hideConstipation(i);
-  stopHoldLoopSound();
 
   pressures[i] = CONST_CURE_PRESSURE;
   setGasHeight(slots[i], pressures[i]);
@@ -248,7 +260,6 @@ function closeGameOverPopup() {
 
 function triggerGameOver() {
   gameOver = true;
-  stopHoldLoopSound();
   slots.forEach(s => s.disabled = true);
 
   if (deathStatusEl) {
@@ -268,7 +279,6 @@ function killSlot(i) {
     constipated[i] = false;
     holdMs[i] = 0;
     hideConstipation(i);
-    stopHoldLoopSound();
   }
 
   dead[i] = true;
@@ -284,6 +294,12 @@ function killSlot(i) {
   showDeadOverlay(slots[i], respawnLeft[i]);
 
   const deadSlotsNow = dead.reduce((count, isDead) => count + (isDead ? 1 : 0), 0);
+  if (deadSlotsNow >= 3) {
+    playBackgroundTrack(3);
+  } else if (deadSlotsNow >= 2) {
+    playBackgroundTrack(2);
+  }
+
   if (totalDeaths >= DEATH_LIMIT || deadSlotsNow >= SIMULTANEOUS_DEAD_LIMIT) {
     triggerGameOver();
   }
@@ -304,7 +320,6 @@ function reviveSlot(i) {
 // -----------------------------
 function restartGame() {
   gameOver = false;
-  stopHoldLoopSound();
   totalDeaths = 0;
   updateDeathStatus();
 
@@ -332,6 +347,7 @@ function restartGame() {
   for (let i = 0; i < speeds.length; i++) speeds[i] = makeSpeed();
 
   t = 0;
+  playBackgroundTrack(1);
   closeGameOverPopup();
 }
 if (restartBtn) restartBtn.addEventListener("click", restartGame);
@@ -360,20 +376,12 @@ window.addEventListener("pointerdown", (e) => {
   if (i === null) return;
   if (dead[i]) return; // disabled ionako blokira
 
-  playRandomTapSound();
-
   pointerDown = { id: e.pointerId, i, t0: performance.now() };
-
-  if (constipated[i]) {
-    startRandomHoldLoopSound();
-  }
 }, { passive: true });
 
 window.addEventListener("pointerup", (e) => {
   if (!pointerDown) return;
   if (e.pointerId !== pointerDown.id) return;
-
-  stopHoldLoopSound();
 
   const { i, t0 } = pointerDown;
   pointerDown = null;
@@ -381,6 +389,7 @@ window.addEventListener("pointerup", (e) => {
   if (gameOver || dead[i]) return;
 
   const dtMs = performance.now() - t0;
+  playRandomClickSound();
 
   // ako je constipated: tap ne radi; ako je pustio pre 1s, reset progres
   if (constipated[i]) {
@@ -394,16 +403,12 @@ window.addEventListener("pointerup", (e) => {
   // normal: tap <= 200ms
   if (dtMs <= TAP_MAX_MS) {
     pressures[i] -= CLICK_REDUCTION;
-    if (pressures[i] < OVERPUMP_DEATH_THRESHOLD) {
-      killSlot(i);
-      return;
-    }
+    if (pressures[i] < 0) pressures[i] = 0;
     setGasHeight(slots[i], pressures[i]);
   }
 }, { passive: true });
 
 window.addEventListener("pointercancel", () => {
-  stopHoldLoopSound();
   pointerDown = null;
 }, { passive: true });
 
@@ -479,10 +484,7 @@ function update(dt) {
       return;
     }
 
-    if (pressures[i] < OVERPUMP_DEATH_THRESHOLD) {
-      killSlot(i);
-      return;
-    }
+    if (pressures[i] < 0) pressures[i] = 0;
 
     setGasHeight(slot, pressures[i]);
   });
