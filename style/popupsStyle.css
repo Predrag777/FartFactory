@@ -62,6 +62,100 @@
   }
 }
 
+/* Explosion entrance for game over */
+@keyframes explosionPopIn{
+  0%{
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  50%{
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  75%{
+    transform: scale(0.95);
+  }
+  100%{
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Middle container shake before explosion */
+@keyframes middleShake{
+  0%, 100%{ transform: translateX(0); }
+  10%{ transform: translateX(-8px) rotate(-1deg); }
+  20%{ transform: translateX(8px) rotate(1deg); }
+  30%{ transform: translateX(-10px) rotate(-1.5deg); }
+  40%{ transform: translateX(10px) rotate(1.5deg); }
+  50%{ transform: translateX(-12px) rotate(-2deg); }
+  60%{ transform: translateX(12px) rotate(2deg); }
+  70%{ transform: translateX(-10px) rotate(-1.5deg); }
+  80%{ transform: translateX(10px) rotate(1.5deg); }
+  90%{ transform: translateX(-6px) rotate(-1deg); }
+}
+
+.middle-container.exploding-shake{
+  animation: middleShake 0.8s ease-in-out !important;
+}
+
+/* Explosion overlay */
+.explosion-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  display: none;
+}
+
+.explosion-overlay.active{
+  display: block;
+}
+
+.explosion-particle{
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+@keyframes explodeParticle{
+  0%{
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100%{
+    opacity: 0;
+    transform: translate(var(--ex), var(--ey)) scale(0.2);
+  }
+}
+
+/* Explosion flash */
+.explosion-flash{
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  background: radial-gradient(circle at 50% 50%, rgba(255,200,50,0.7), rgba(255,100,0,0.3), transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes flashBang{
+  0%{ opacity: 0; }
+  15%{ opacity: 1; }
+  100%{ opacity: 0; }
+}
+
+.explosion-flash.active{
+  animation: flashBang 0.6s ease-out forwards;
+}
+
+/* Game over modal explosion entrance */
+.gameover-modal.explosion-enter{
+  animation: explosionPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, gameoverPulse 2s ease-in-out 0.5s infinite !important;
+}
+
 /* CENTER TITLE */
 
 .gameover-center{

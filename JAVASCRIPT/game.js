@@ -406,6 +406,69 @@ function closeGameOverPopup() {
   gameOverBackdrop.classList.remove("active");
 }
 
+
+function triggerExplosionSequence({ isGameOver = false } = {}) {
+  // Middle container shake
+  const middle = document.getElementById('middleDeathsContainer');
+  if (middle) {
+    middle.classList.add('exploding-shake');
+    setTimeout(() => middle.classList.remove('exploding-shake'), 800);
+  }
+
+  // Show explosion overlay
+  const overlay = document.getElementById('explosionOverlay');
+  const flash = document.getElementById('explosionFlash');
+  if (overlay) {
+    overlay.innerHTML = '';
+    overlay.classList.add('active');
+    // Generate particles from center of middle container
+    const rect = middle ? middle.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/2, width: 100, height: 60 };
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const colors = [
+      '#fbbf24', '#f97316', '#fde68a', '#f87171', '#facc15', '#f472b6', '#a3e635', '#22d3ee', '#38bdf8', '#fff'
+    ];
+    for (let i = 0; i < 22; i++) {
+      const angle = (Math.PI * 2) * (i / 22) + Math.random() * 0.2;
+      const dist = 120 + Math.random() * 60;
+      const ex = Math.cos(angle) * dist;
+      const ey = Math.sin(angle) * dist;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const particle = document.createElement('div');
+      particle.className = 'explosion-particle';
+      particle.style.left = `${cx - 9}px`;
+      particle.style.top = `${cy - 9}px`;
+      particle.style.background = color;
+      particle.style.setProperty('--ex', `${ex}px`);
+      particle.style.setProperty('--ey', `${ey}px`);
+      particle.style.animation = `explodeParticle 0.7s cubic-bezier(0.22,1,0.36,1) forwards`;
+      overlay.appendChild(particle);
+    }
+    // Remove overlay after animation
+    setTimeout(() => {
+      overlay.classList.remove('active');
+      overlay.innerHTML = '';
+    }, 800);
+  }
+  // Flash
+  if (flash) {
+    flash.classList.add('active');
+    setTimeout(() => flash.classList.remove('active'), 600);
+  }
+
+  // If game over, show popup after explosion
+  if (isGameOver) {
+    setTimeout(() => {
+      const modal = document.querySelector('.gameover-modal');
+      if (modal) {
+        modal.classList.add('explosion-enter');
+        setTimeout(() => modal.classList.remove('explosion-enter'), 900);
+      }
+      openGameOverPopup();
+    }, 650);
+  }
+}
+
 function triggerGameOver() {
   if (gameOver) return; // prevent double-trigger
   gameOver = true;
@@ -421,7 +484,7 @@ function triggerGameOver() {
   if (deathStatusEl) {
     deathStatusEl.textContent = `Status: ${totalDeaths} / ${DEATH_LIMIT} deaths • GAME OVER`;
   }
-  openGameOverPopup();
+  triggerExplosionSequence({ isGameOver: true });
 }
 
 // -----------------------------
@@ -482,8 +545,11 @@ function killSlot(i) {
 
   const deadSlotsNow = dead.reduce((count, isDead) => count + (isDead ? 1 : 0), 0);
 
-  if (totalDeaths >= DEATH_LIMIT || deadSlotsNow >= SIMULTANEOUS_DEAD_LIMIT) {
+  if (totalDeaths >= DEATH_LIMIT) {
     triggerGameOver();
+  } else if (deadSlotsNow >= SIMULTANEOUS_DEAD_LIMIT) {
+    // Only trigger explosion, not game over
+    triggerExplosionSequence({ isGameOver: false });
   }
 }
 
