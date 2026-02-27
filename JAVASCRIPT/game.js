@@ -382,7 +382,7 @@ function cureConstipation(i) {
 // -----------------------------
 // GAME OVER POPUP
 // -----------------------------
-function openGameOverPopup() {
+function openGameOverPopup({ explosion = false } = {}) {
   if (!gameOverBackdrop) return;
   if (finalTimeEl) finalTimeEl.textContent = formatMMSS(elapsedSec);
   if (finalFartsEl) finalFartsEl.textContent = totalFarts;
@@ -397,6 +397,18 @@ function openGameOverPopup() {
     if (badge) badge.style.display = "none";
   }
 
+  // Remove all entrance classes first
+  const modal = document.querySelector('.gameover-modal');
+  if (modal) {
+    modal.classList.remove('popup-fade-in', 'explosion-enter');
+    if (explosion) {
+      modal.classList.add('explosion-enter');
+      setTimeout(() => modal.classList.remove('explosion-enter'), 900);
+    } else {
+      modal.classList.add('popup-fade-in');
+      setTimeout(() => modal.classList.remove('popup-fade-in'), 400);
+    }
+  }
   gameOverBackdrop.classList.add("active");
   canDismissModal = false;
   setTimeout(() => { canDismissModal = true; }, 600);
@@ -460,12 +472,7 @@ function triggerExplosionSequence({ isGameOver = false } = {}) {
   if (isGameOver) {
     setTimeout(() => {
       if (!gameOverBackdrop.classList.contains('active')) {
-        const modal = document.querySelector('.gameover-modal');
-        if (modal) {
-          modal.classList.add('explosion-enter');
-          setTimeout(() => modal.classList.remove('explosion-enter'), 900);
-        }
-        openGameOverPopup();
+        openGameOverPopup({ explosion: true });
       }
     }, 650);
   }
@@ -666,6 +673,12 @@ window.addEventListener("pointerdown", (e) => {
   const i = slotIndexFromTarget(e.target);
   if (i === null) return;
   if (dead[i]) return; // disabled ionako blokira
+
+  // Tap animation — restart on every press so spamming works
+  const slotEl = slots[i];
+  slotEl.classList.remove("tap-anim");
+  void slotEl.offsetWidth; // force reflow to restart animation
+  slotEl.classList.add("tap-anim");
 
   pointerDown = { id: e.pointerId, i, t0: performance.now() };
 }, { passive: true });

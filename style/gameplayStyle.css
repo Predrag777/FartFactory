@@ -1,3 +1,22 @@
+                .tube-row-bottom{
+                  position: relative;
+                }
+                .tube-row-bottom .tube{
+                  margin-top: -32px !important;
+                }
+          .tube-row-bottom .tube{
+            margin-top:-20px;
+          }
+    /* Tube Glow Animation */
+    @keyframes tubeGlow {
+      0%   { box-shadow: 0 0 0px 0px #22d3ee44, 0 0 0px 0px #fbbf2444; }
+      20%  { box-shadow: 0 0 8px 2px #22d3ee88, 0 0 12px 4px #fbbf2488; }
+      40%  { box-shadow: 0 0 14px 4px #a3e63588, 0 0 18px 8px #fbbf2488; }
+      60%  { box-shadow: 0 0 18px 6px #fbbf2488, 0 0 24px 12px #22d3ee88; }
+      80%  { box-shadow: 0 0 14px 4px #a3e63588, 0 0 18px 8px #fbbf2488; }
+      100% { box-shadow: 0 0 0px 0px #22d3ee44, 0 0 0px 0px #fbbf2444; }
+    }
+
     @font-face {
       font-family: 'SoupOfJustice';
       src: url('../fonts/soupofjustice.ttf') format('truetype');
@@ -251,9 +270,16 @@ main{
       border-left:1px solid rgba(255,255,255,.15);
       border-right:1px solid rgba(0,0,0,.35);
       box-shadow:
-        inset 3px 0 6px rgba(255,255,255,.08),
-        inset -3px 0 6px rgba(0,0,0,.3),
-        0 0 10px rgba(94,234,212,.12);
+        0 0 18px 6px rgba(255,255,255,0.22),
+        0 0 32px 12px rgba(255,255,255,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -1px 0 rgba(0,0,0,0.08),
+        0 4px 16px rgba(0,0,0,0.12);
+      background:
+        linear-gradient(135deg, rgba(180,240,220,0.10) 0%, rgba(180,240,220,0.03) 40%, rgba(180,240,220,0.07) 100%);
+      border: 1.5px solid rgba(180,230,210,0.18);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
     .tube::after{
@@ -523,7 +549,17 @@ main{
     }
 
     .slot:active{
-      transform: translateY(0px) scale(.995);
+      transform: scale(0.90);
+    }
+
+    @keyframes slotTap {
+      0%   { transform: scale(0.90); }
+      50%  { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    .slot.tap-anim{
+      animation: slotTap 0.2s ease-out forwards;
     }
 
     .slot-inner{
@@ -692,8 +728,8 @@ main{
 
       .tube{
         width:18px;
-        height:calc(100% + 22px);
-        margin-top:-11px;
+        height:calc(100% + 52px);
+        margin-top:-21px;
         overflow:hidden;
       }
 

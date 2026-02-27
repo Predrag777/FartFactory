@@ -30,8 +30,17 @@
     0 20px 60px rgba(0,0,0,0.6);
   padding: 28px 24px 24px;
   color: rgba(255,255,255,0.92);
-  animation: popupFadeIn 0.3s ease, gameoverPulse 2s ease-in-out 0.3s infinite;
   font-family: 'SoupOfJustice', sans-serif;
+  /* Only apply entrance animation if not explosion */
+  animation: gameoverPulse 2s ease-in-out 0.3s infinite;
+}
+
+.gameover-modal.popup-fade-in {
+  animation: popupFadeIn 0.3s ease, gameoverPulse 2s ease-in-out 0.3s infinite;
+}
+
+.gameover-modal.explosion-enter{
+  animation: explosionPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, gameoverPulse 2s ease-in-out 0.5s infinite !important;
 }
 
 @keyframes gameoverPulse{
