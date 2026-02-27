@@ -17,6 +17,45 @@
       100% { box-shadow: 0 0 0px 0px #22d3ee44, 0 0 0px 0px #fbbf2444; }
     }
 
+    .poop-emoji {
+      position: fixed;
+      font-size: 20px;
+      pointer-events: none;
+      z-index: 9999;
+      transition: left 0.45s cubic-bezier(0.2, 0.8, 0.3, 1),
+                  top 0.45s cubic-bezier(0.2, 0.8, 0.3, 1),
+                  transform 0.45s ease-in,
+                  opacity 0.15s ease-in 0.35s;
+    }
+
+    .poop-emoji.flying {
+      transform: translate(-50%, -50%) scale(0.4);
+      opacity: 0;
+    }
+
+    /* Center constipation warning */
+    @keyframes constPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+      50%      { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    }
+
+    .constipation-center-warning {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'SoupOfJustice', sans-serif;
+      font-size: 30px;
+      font-weight: 900;
+      color: #fbbf24;
+      text-shadow: 0 0 12px rgba(251,191,36,0.7), 0 0 24px rgba(251,191,36,0.4), 0 2px 4px rgba(0,0,0,0.6);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      z-index: 9998;
+      pointer-events: none;
+      animation: constPulse 0.8s ease-in-out infinite;
+    }
+
     @font-face {
       font-family: 'SoupOfJustice';
       src: url('../fonts/soupofjustice.ttf') format('truetype');
@@ -73,25 +112,17 @@
     }
 
     header{
-      border:1px solid rgba(180,230,210,0.2);
-      border-radius:16px;
-      padding:18px 20px;
-      min-height:85px;
+      display:none;
+    }
+
+    #statsBar{
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:center;
+      gap:12px;
+      padding:8px 0;
       position:relative;
-      width:100vw;
-      margin-left:calc(50% - 50vw);
-      background:
-        linear-gradient(135deg, rgba(180,240,220,0.08) 0%, rgba(180,240,220,0.02) 40%, rgba(180,240,220,0.06) 100%),
-        rgba(10,18,30,0.5);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.1),
-        inset 0 -1px 0 rgba(0,0,0,0.08),
-        0 4px 20px rgba(0,0,0,0.3);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      z-index:10;
     }
 
     footer{
@@ -175,6 +206,7 @@
       background: rgba(161,98,7,.22);
       box-shadow: 0 0 14px rgba(234,179,8,.35), inset 0 0 0 1px rgba(0,0,0,.25);
       padding:12px 18px;
+      transition: transform 0.1s ease-out;
     }
 
 main{

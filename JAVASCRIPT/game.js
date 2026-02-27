@@ -112,9 +112,9 @@ const middleGasFillEl = document.getElementById("middleGasFill");
 const middleDeathsValueEl = document.getElementById("middleDeathsValue");
 const timerEl = document.getElementById("gameTimer");
 const fartCounterEl = document.getElementById("fartCounter");
-const headerEl = document.querySelector("header");
-const headerRightEl = document.querySelector(".header-right");
+const statsBarEl = document.getElementById("statsBar");
 const mobileStatsHostEl = document.getElementById("mobileStatsHost");
+const mainEl = document.querySelector("main");
 
 // Tube fill elements (map slotIndex → fill element)
 const tubeFills = [];
@@ -144,17 +144,17 @@ function updateTubeFill(slotIndex, pressure) {
 }
 
 function placeStatusByViewport() {
-  if (!headerEl || !headerRightEl || !mobileStatsHostEl) return;
+  if (!statsBarEl || !mobileStatsHostEl || !mainEl) return;
 
   if (window.matchMedia("(max-width: 720px)").matches) {
-    if (headerRightEl.parentElement !== mobileStatsHostEl) {
-      mobileStatsHostEl.appendChild(headerRightEl);
+    if (statsBarEl.parentElement !== mobileStatsHostEl) {
+      mobileStatsHostEl.appendChild(statsBarEl);
     }
     return;
   }
 
-  if (headerRightEl.parentElement !== headerEl) {
-    headerEl.appendChild(headerRightEl);
+  if (statsBarEl.parentElement !== mainEl) {
+    mainEl.prepend(statsBarEl);
   }
 }
 
@@ -332,6 +332,17 @@ function showConstipation(i) {
   slot.classList.add("constipated");
   updateConstipationProgress(i);
   positionConstipationAlert(i);
+
+  // Show center warning
+  let warn = document.getElementById('constCenterWarn');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.id = 'constCenterWarn';
+    warn.className = 'constipation-center-warning';
+    warn.textContent = 'CONSTIPATION';
+    document.body.appendChild(warn);
+  }
+  warn.style.display = 'block';
 }
 function hideConstipation(i) {
   const slot = slots[i];
@@ -340,6 +351,10 @@ function hideConstipation(i) {
   overlay.style.display = "none";
   slot.classList.remove("constipated");
   hideConstipationAlert();
+
+  // Hide center warning
+  const warn = document.getElementById('constCenterWarn');
+  if (warn) warn.style.display = 'none';
 }
 function updateConstipationProgress(i) {
   const slot = slots[i];
@@ -603,7 +618,7 @@ function restartGame() {
   gameOver = false;
   totalDeaths = 0;
   totalFarts = 0;
-  if (fartCounterEl) fartCounterEl.textContent = '💨 0';
+  if (fartCounterEl) fartCounterEl.textContent = '� 0';
   updateDeathStatus();
 
   elapsedSec = 0;
@@ -668,6 +683,54 @@ function slotIndexFromTarget(target){
   return idx;
 }
 
+// Poop emoji spawner — flies toward fart counter
+let pendingPoopFarts = 0;
+
+function spawnPoop(x, y) {
+  const el = document.createElement('span');
+  el.className = 'poop-emoji';
+  el.textContent = '\uD83D\uDCA9';
+  const ox = (Math.random() - 0.5) * 24;
+  const oy = (Math.random() - 0.5) * 24;
+  el.style.left = (x + ox) + 'px';
+  el.style.top = (y + oy) + 'px';
+  el.style.transform = 'translate(-50%, -50%) scale(1)';
+  el.style.opacity = '1';
+  document.body.appendChild(el);
+
+  // Get fart counter position
+  const target = fartCounterEl || document.getElementById('fartCounter');
+  const targetRect = target ? target.getBoundingClientRect() : { left: window.innerWidth / 2, top: 30, width: 60, height: 30 };
+  const tx = targetRect.left + targetRect.width / 2;
+  const ty = targetRect.top + targetRect.height / 2;
+
+  // Queue a fart increment for when poop arrives
+  pendingPoopFarts++;
+
+  // Start flying on next frame
+  requestAnimationFrame(() => {
+    el.style.left = tx + 'px';
+    el.style.top = ty + 'px';
+    el.classList.add('flying');
+  });
+
+  // When arrived: increment counter, pulse, remove
+  setTimeout(() => {
+    pendingPoopFarts--;
+    totalFarts++;
+    if (fartCounterEl) fartCounterEl.textContent = `\uD83D\uDCA9 ${totalFarts}`;
+    // Quick pulse on counter
+    if (target) {
+      target.style.transform = 'scale(1.15)';
+      setTimeout(() => target.style.transform = 'scale(1)', 100);
+    }
+    el.remove();
+  }, 480);
+}
+
+let poopInterval = null; // for hold-spawning
+let lastPoopXY = null;
+
 window.addEventListener("pointerdown", (e) => {
   if (gameOver) return;
   const i = slotIndexFromTarget(e.target);
@@ -680,10 +743,24 @@ window.addEventListener("pointerdown", (e) => {
   void slotEl.offsetWidth; // force reflow to restart animation
   slotEl.classList.add("tap-anim");
 
+  // Spawn poop emoji at touch/click position
+  spawnPoop(e.clientX, e.clientY);
+  lastPoopXY = { x: e.clientX, y: e.clientY };
+
+  // Start continuous poop spawning while holding
+  if (poopInterval) clearInterval(poopInterval);
+  poopInterval = setInterval(() => {
+    if (lastPoopXY) spawnPoop(lastPoopXY.x, lastPoopXY.y);
+  }, 120);
+
   pointerDown = { id: e.pointerId, i, t0: performance.now() };
 }, { passive: true });
 
 window.addEventListener("pointerup", (e) => {
+  // Stop continuous poop spawning
+  if (poopInterval) { clearInterval(poopInterval); poopInterval = null; }
+  lastPoopXY = null;
+
   if (!pointerDown) return;
   if (e.pointerId !== pointerDown.id) return;
 
@@ -707,8 +784,7 @@ window.addEventListener("pointerup", (e) => {
   // normal: tap <= 200ms
   if (dtMs <= TAP_MAX_MS) {
     pressures[i] -= CLICK_REDUCTION;
-    totalFarts++;
-    if (fartCounterEl) fartCounterEl.textContent = `💨 ${totalFarts}`;
+    // Fart counter is now incremented when poop emoji arrives
 
     if (pressures[i] < UNDERFLOW_DEATH_THRESHOLD) {
       killSlot(i);
@@ -719,7 +795,16 @@ window.addEventListener("pointerup", (e) => {
   }
 }, { passive: true });
 
+window.addEventListener("pointermove", (e) => {
+  if (lastPoopXY) {
+    lastPoopXY.x = e.clientX;
+    lastPoopXY.y = e.clientY;
+  }
+}, { passive: true });
+
 window.addEventListener("pointercancel", () => {
+  if (poopInterval) { clearInterval(poopInterval); poopInterval = null; }
+  lastPoopXY = null;
   pointerDown = null;
 }, { passive: true });
 
