@@ -2,6 +2,7 @@ const slots = document.querySelectorAll(".slot");
 
 const CLICK_SOUNDS = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`);
 const DEATH_SOUNDS = ["deathSounds/death1.mp3"];
+const MASTER_VOLUME = 0.5;
 const backgroundMusic = new Audio("backgroundSounds/instrumental.mp3");
 const backgroundMusicDanger = new Audio("backgroundSounds/instrumental2.mp3");
 const backgroundMusicCritical = new Audio("backgroundSounds/dmol3.mp3");
@@ -9,6 +10,9 @@ const backgroundMusicCritical = new Audio("backgroundSounds/dmol3.mp3");
 backgroundMusic.loop = true;
 backgroundMusicDanger.loop = true;
 backgroundMusicCritical.loop = true;
+backgroundMusic.volume = MASTER_VOLUME;
+backgroundMusicDanger.volume = MASTER_VOLUME;
+backgroundMusicCritical.volume = MASTER_VOLUME;
 
 let activeBackgroundTrack = 1;
 
@@ -36,6 +40,7 @@ function playBackgroundTrack(trackNumber) {
 function playRandomClickSound() {
   const randomSrc = CLICK_SOUNDS[Math.floor(Math.random() * CLICK_SOUNDS.length)];
   const audio = new Audio(randomSrc);
+  audio.volume = MASTER_VOLUME;
   audio.play().catch(() => {});
 }
 
@@ -43,6 +48,7 @@ function playRandomDeathSound() {
   if (!DEATH_SOUNDS.length) return;
   const randomSrc = DEATH_SOUNDS[Math.floor(Math.random() * DEATH_SOUNDS.length)];
   const audio = new Audio(randomSrc);
+  audio.volume = MASTER_VOLUME;
   audio.play().catch(() => {});
 }
 
