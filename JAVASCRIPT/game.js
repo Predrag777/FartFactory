@@ -4,7 +4,7 @@ const CLICK_SOUNDS = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`)
 const DEATH_SOUNDS = ["deathSounds/death1.mp3"];
 const backgroundMusic = new Audio("backgroundSounds/instrumental.mp3");
 const backgroundMusicDanger = new Audio("backgroundSounds/instrumental2.mp3");
-const backgroundMusicCritical = new Audio("backgroundSounds/osinatoDmol.mp3");
+const backgroundMusicCritical = new Audio("backgroundSounds/dmol.mp3");
 
 backgroundMusic.loop = true;
 backgroundMusicDanger.loop = true;
