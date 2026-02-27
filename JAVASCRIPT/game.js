@@ -4,7 +4,7 @@ const CLICK_SOUNDS = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`)
 const DEATH_SOUNDS = ["deathSounds/death1.mp3"];
 const backgroundMusic = new Audio("backgroundSounds/instrumental.mp3");
 const backgroundMusicDanger = new Audio("backgroundSounds/instrumental2.mp3");
-const backgroundMusicCritical = new Audio("backgroundSounds/dmol.mp3");
+const backgroundMusicCritical = new Audio("backgroundSounds/dmol3.mp3");
 
 backgroundMusic.loop = true;
 backgroundMusicDanger.loop = true;
@@ -271,6 +271,13 @@ function closeGameOverPopup() {
 function triggerGameOver() {
   gameOver = true;
   slots.forEach(s => s.disabled = true);
+
+  backgroundMusic.pause();
+  backgroundMusic.currentTime = 0;
+  backgroundMusicDanger.pause();
+  backgroundMusicDanger.currentTime = 0;
+  backgroundMusicCritical.pause();
+  backgroundMusicCritical.currentTime = 0;
 
   if (deathStatusEl) {
     deathStatusEl.textContent = `Status: ${totalDeaths} / ${DEATH_LIMIT} deaths • GAME OVER`;
