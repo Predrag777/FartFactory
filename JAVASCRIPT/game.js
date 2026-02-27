@@ -104,6 +104,8 @@ const SIMULTANEOUS_DEAD_LIMIT = 3;
 let totalDeaths = 0;
 let totalFarts = 0;
 let gameOver = false;
+let deathBurstTimers = []; // track pending death-burst timeouts
+let canDismissModal = false; // prevent accidental backdrop tap closing modal
 
 const deathStatusEl = document.getElementById("deathStatus");
 const middleGasFillEl = document.getElementById("middleGasFill");
@@ -188,6 +190,14 @@ function updateDeathStatus() {
   if (middleGasFillEl) {
     const fillPercent = Math.max(0, Math.min(100, (totalDeaths / DEATH_LIMIT) * 100));
     middleGasFillEl.style.width = `${fillPercent}%`;
+    // Shift hue from green (120) to red (0) as deaths increase
+    const hue = 120 - (fillPercent / 100) * 120;
+    const colorStart = `hsl(${hue}, 70%, 35%)`;
+    const colorEnd   = `hsl(${hue}, 70%, 50%)`;
+    middleGasFillEl.style.background = `linear-gradient(90deg, ${colorStart}, ${colorEnd})`;
+    // Update wave color to match the gas end color exactly
+    const waveEl = middleGasFillEl.querySelector('.middle-gas-wave');
+    if (waveEl) waveEl.style.background = colorEnd;
   }
 }
 updateDeathStatus();
@@ -244,9 +254,8 @@ slots.forEach((slot) => {
   constOv.className = "constipation-overlay";
   constOv.style.display = "none";
   constOv.innerHTML = `
-    ${characterSrc ? `<img class="constipation-icon" src="${characterSrc}" alt="" aria-hidden="true" />` : ""}
-    <div class="constipation-timer">0.0s</div>
-    <div class="constipation-sub">Hold for 1 second</div>
+    <div class="constipation-timer-top">0.0s</div>
+    <img class="constipation-hand" src="UI/images/hand-press.png" alt="Hold to cure" />
   `;
   slot.appendChild(constOv);
 });
@@ -337,24 +346,11 @@ function updateConstipationProgress(i) {
   const overlay = slot.querySelector(".constipation-overlay");
   if (!overlay) return;
 
-  const p = Math.max(0, Math.min(1, holdMs[i] / CONST_HOLD_TO_CURE_MS));
   const elapsed = (holdMs[i] / 1000).toFixed(1);
-  const timerEl = overlay.querySelector(".constipation-timer");
-  if (timerEl) timerEl.textContent = `${elapsed}s`;
+  const target = (CONST_HOLD_TO_CURE_MS / 1000).toFixed(1);
 
-  // When holding, stop the pulse animation on the icon
-  const icon = overlay.querySelector(".constipation-icon");
-  if (icon) {
-    if (holdMs[i] > 0) {
-      icon.style.animationPlayState = 'paused';
-      icon.style.transform = `scale(${1 + 0.15 * (1 - p)})`;
-      icon.style.opacity = 1 - (0.3 * p);
-    } else {
-      icon.style.animationPlayState = '';
-      icon.style.transform = '';
-      icon.style.opacity = '';
-    }
-  }
+  const timerEl = overlay.querySelector(".constipation-timer-top");
+  if (timerEl) timerEl.textContent = `${elapsed}s`;
 }
 
 function triggerConstipation() {
@@ -402,6 +398,8 @@ function openGameOverPopup() {
   }
 
   gameOverBackdrop.classList.add("active");
+  canDismissModal = false;
+  setTimeout(() => { canDismissModal = true; }, 600);
 }
 function closeGameOverPopup() {
   if (!gameOverBackdrop) return;
@@ -409,6 +407,7 @@ function closeGameOverPopup() {
 }
 
 function triggerGameOver() {
+  if (gameOver) return; // prevent double-trigger
   gameOver = true;
   slots.forEach(s => s.disabled = true);
 
@@ -461,7 +460,8 @@ function killSlot(i) {
     }
 
     // After tube fills (0.3s) → update central container, then instantly clear tube
-    setTimeout(() => {
+    const burstTimer = setTimeout(() => {
+      if (gameOver && !dead[i]) return; // stale timeout after restart
       updateDeathStatus();
       deathFill.classList.remove('death-burst');
       deathFill.style.transition = 'none';
@@ -472,6 +472,7 @@ function killSlot(i) {
       deathFill.style.transition = '';
       deathFill.style.background = '';
     }, 300);
+    deathBurstTimers.push(burstTimer);
   } else {
     updateDeathStatus();
   }
@@ -507,6 +508,10 @@ function reviveSlot(i) {
 // RESTART (ako koristiš popup)
 // -----------------------------
 function restartGame() {
+  // Clear any pending death-burst timeouts
+  deathBurstTimers.forEach(t => clearTimeout(t));
+  deathBurstTimers = [];
+
   gameOver = false;
   totalDeaths = 0;
   totalFarts = 0;
@@ -544,6 +549,8 @@ function restartGame() {
   for (let i = 0; i < speeds.length; i++) speeds[i] = makeSpeed();
 
   t = 0;
+  lastTime = performance.now(); // reset so first frame doesn't get huge dt
+  pointerDown = null;            // clear stale pointer state
   playBackgroundTrack(3);
   closeGameOverPopup();
 }
@@ -553,11 +560,6 @@ if (exitBtn) exitBtn.addEventListener("click", () => {
   window.close();
   // fallback: go to a blank page if window.close() is blocked
   window.location.href = "about:blank";
-});
-
-// Close modal on backdrop tap (outside the modal)
-if (gameOverBackdrop) gameOverBackdrop.addEventListener("click", (e) => {
-  if (e.target === gameOverBackdrop) closeGameOverPopup();
 });
 
 // -----------------------------
@@ -659,12 +661,17 @@ function update(dt) {
     if (constipated[i] && !dead[i]) {
       holdMs[i] += dt * 1000;
       updateConstipationProgress(i);
+      slots[i].classList.add('healing');
 
       if (holdMs[i] >= CONST_HOLD_TO_CURE_MS) {
+        slots[i].classList.remove('healing');
         cureConstipation(i);
         // ostavi pointerDown aktivan, ali više nema efekta
       }
     }
+  } else {
+    // remove healing from all slots when not holding
+    slots.forEach(s => s.classList.remove('healing'));
   }
 
   slots.forEach((slot, i) => {
@@ -704,13 +711,18 @@ function update(dt) {
       return;
     }
 
+    if (gameOver) return; // stop processing if game over triggered by another slot this frame
+
     setGasHeight(slot, pressures[i]);
   });
 }
 
 function loop(now) {
-  const dt = (now - lastTime) / 1000;
+  let dt = (now - lastTime) / 1000;
   lastTime = now;
+
+  // Cap dt to prevent huge spikes (e.g. tab switch, game over screen)
+  if (dt > 0.1) dt = 0.1;
 
   update(dt);
   requestAnimationFrame(loop);

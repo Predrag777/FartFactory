@@ -30,8 +30,25 @@
     0 20px 60px rgba(0,0,0,0.6);
   padding: 28px 24px 24px;
   color: rgba(255,255,255,0.92);
-  animation: popupFadeIn 0.3s ease;
+  animation: popupFadeIn 0.3s ease, gameoverPulse 2s ease-in-out 0.3s infinite;
   font-family: 'SoupOfJustice', sans-serif;
+}
+
+@keyframes gameoverPulse{
+  0%, 100%{
+    border-color: #22c55e;
+    box-shadow:
+      0 0 30px rgba(34,197,94,0.25),
+      0 0 80px rgba(34,197,94,0.08),
+      0 20px 60px rgba(0,0,0,0.6);
+  }
+  50%{
+    border-color: #4ade80;
+    box-shadow:
+      0 0 45px rgba(34,197,94,0.45),
+      0 0 100px rgba(34,197,94,0.15),
+      0 20px 60px rgba(0,0,0,0.6);
+  }
 }
 
 @keyframes popupFadeIn{
@@ -58,6 +75,19 @@
   display:block;
   margin:0 auto 12px;
   filter: drop-shadow(0 4px 14px rgba(251,191,36,0.35));
+  animation: gameoverTitlePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes gameoverTitlePulse{
+  0%, 100%{
+    transform: scale(1);
+    filter: drop-shadow(0 4px 14px rgba(251,191,36,0.35));
+  }
+  50%{
+    transform: scale(1.06);
+    filter: drop-shadow(0 6px 22px rgba(251,191,36,0.55))
+           drop-shadow(0 0 12px rgba(251,191,36,0.3));
+  }
 }
 
 .highscore-badge{
