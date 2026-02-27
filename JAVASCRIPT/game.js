@@ -46,7 +46,7 @@ function playRandomDeathSound() {
   audio.play().catch(() => {});
 }
 
-playBackgroundTrack(1);
+playBackgroundTrack(3);
 window.addEventListener("pointerdown", () => {
   const currentTrack = activeBackgroundTrack === 3
     ? backgroundMusicCritical
@@ -65,6 +65,7 @@ const constipated = new Array(slots.length).fill(false);
 const holdMs = new Array(slots.length).fill(0);
 
 const MAX = 100;
+const UNDERFLOW_DEATH_THRESHOLD = -20;
 const BASE_SPEED = 10;       // osnovna brzina rasta (po sekundi)
 const CLICK_REDUCTION = 20;
 const RESPAWN_SECONDS = 5;
@@ -182,7 +183,8 @@ slots.forEach((slot) => {
 function setGasHeight(slot, value01to100) {
   const gas = slot.querySelector(".gas");
   if (!gas) return;
-  gas.style.height = value01to100 + "%";
+  const visualValue = Math.max(0, Math.min(MAX, value01to100));
+  gas.style.height = visualValue + "%";
 }
 
 // DEAD overlay helpers
@@ -303,11 +305,6 @@ function killSlot(i) {
   showDeadOverlay(slots[i], respawnLeft[i]);
 
   const deadSlotsNow = dead.reduce((count, isDead) => count + (isDead ? 1 : 0), 0);
-  if (deadSlotsNow >= 3) {
-    playBackgroundTrack(3);
-  } else if (deadSlotsNow >= 2) {
-    playBackgroundTrack(2);
-  }
 
   if (totalDeaths >= DEATH_LIMIT || deadSlotsNow >= SIMULTANEOUS_DEAD_LIMIT) {
     triggerGameOver();
@@ -356,7 +353,7 @@ function restartGame() {
   for (let i = 0; i < speeds.length; i++) speeds[i] = makeSpeed();
 
   t = 0;
-  playBackgroundTrack(1);
+  playBackgroundTrack(3);
   closeGameOverPopup();
 }
 if (restartBtn) restartBtn.addEventListener("click", restartGame);
@@ -412,7 +409,12 @@ window.addEventListener("pointerup", (e) => {
   // normal: tap <= 200ms
   if (dtMs <= TAP_MAX_MS) {
     pressures[i] -= CLICK_REDUCTION;
-    if (pressures[i] < 0) pressures[i] = 0;
+
+    if (pressures[i] < UNDERFLOW_DEATH_THRESHOLD) {
+      killSlot(i);
+      return;
+    }
+
     setGasHeight(slots[i], pressures[i]);
   }
 }, { passive: true });
@@ -493,7 +495,10 @@ function update(dt) {
       return;
     }
 
-    if (pressures[i] < 0) pressures[i] = 0;
+    if (pressures[i] < UNDERFLOW_DEATH_THRESHOLD) {
+      killSlot(i);
+      return;
+    }
 
     setGasHeight(slot, pressures[i]);
   });

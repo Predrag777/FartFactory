@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "FartFactory",
+			"path": "."
+		},
+		{
+			"name": "sounds",
+			"path": "../../Downloads/sounds"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "FartFactory"
+	}
+}
