@@ -450,21 +450,23 @@ function triggerExplosionSequence({ isGameOver = false } = {}) {
       overlay.innerHTML = '';
     }, 800);
   }
-  // Flash
-  if (flash) {
+  // Flash only if not game over (to avoid double flash)
+  if (flash && !isGameOver) {
     flash.classList.add('active');
     setTimeout(() => flash.classList.remove('active'), 600);
   }
 
-  // If game over, show popup after explosion
+  // If game over, show popup after explosion (no flash)
   if (isGameOver) {
     setTimeout(() => {
-      const modal = document.querySelector('.gameover-modal');
-      if (modal) {
-        modal.classList.add('explosion-enter');
-        setTimeout(() => modal.classList.remove('explosion-enter'), 900);
+      if (!gameOverBackdrop.classList.contains('active')) {
+        const modal = document.querySelector('.gameover-modal');
+        if (modal) {
+          modal.classList.add('explosion-enter');
+          setTimeout(() => modal.classList.remove('explosion-enter'), 900);
+        }
+        openGameOverPopup();
       }
-      openGameOverPopup();
     }, 650);
   }
 }
@@ -547,9 +549,22 @@ function killSlot(i) {
 
   if (totalDeaths >= DEATH_LIMIT) {
     triggerGameOver();
-  } else if (deadSlotsNow >= SIMULTANEOUS_DEAD_LIMIT) {
-    // Only trigger explosion, not game over
-    triggerExplosionSequence({ isGameOver: false });
+  } else if (deadSlotsNow >= 3) {
+    // If 3 or more dead at once, treat as game over
+    if (!gameOver) {
+      gameOver = true;
+      slots.forEach(s => s.disabled = true);
+      backgroundMusic.pause();
+      backgroundMusic.currentTime = 0;
+      backgroundMusicDanger.pause();
+      backgroundMusicDanger.currentTime = 0;
+      backgroundMusicCritical.pause();
+      backgroundMusicCritical.currentTime = 0;
+      if (deathStatusEl) {
+        deathStatusEl.textContent = `Status: ${totalDeaths} / ${DEATH_LIMIT} deaths • GAME OVER`;
+      }
+      triggerExplosionSequence({ isGameOver: true });
+    }
   }
 }
 
