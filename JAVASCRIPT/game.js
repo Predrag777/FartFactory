@@ -1,6 +1,7 @@
 const slots = document.querySelectorAll(".slot");
 
 const CLICK_SOUNDS = Array.from({ length: 15 }, (_, i) => `sounds/${i + 1}.mp3`);
+const DEATH_SOUNDS = ["deathSounds/death1.mp3"];
 const backgroundMusic = new Audio("backgroundSounds/instrumental.mp3");
 const backgroundMusicDanger = new Audio("backgroundSounds/instrumental2.mp3");
 const backgroundMusicCritical = new Audio("backgroundSounds/osinatoDmol.mp3");
@@ -34,6 +35,13 @@ function playBackgroundTrack(trackNumber) {
 
 function playRandomClickSound() {
   const randomSrc = CLICK_SOUNDS[Math.floor(Math.random() * CLICK_SOUNDS.length)];
+  const audio = new Audio(randomSrc);
+  audio.play().catch(() => {});
+}
+
+function playRandomDeathSound() {
+  if (!DEATH_SOUNDS.length) return;
+  const randomSrc = DEATH_SOUNDS[Math.floor(Math.random() * DEATH_SOUNDS.length)];
   const audio = new Audio(randomSrc);
   audio.play().catch(() => {});
 }
@@ -283,6 +291,7 @@ function killSlot(i) {
 
   dead[i] = true;
   respawnLeft[i] = RESPAWN_SECONDS;
+  playRandomDeathSound();
 
   totalDeaths += 1;
   updateDeathStatus();
