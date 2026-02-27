@@ -392,6 +392,10 @@ function cureConstipation(i) {
 
   pressures[i] = CONST_CURE_PRESSURE;
   setGasHeight(slots[i], pressures[i]);
+
+  // Bonus: +5 poop points for curing constipation
+  totalFarts += 5;
+  if (fartCounterEl) fartCounterEl.textContent = `\uD83D\uDCA9 ${totalFarts}`;
 }
 
 // -----------------------------
@@ -743,15 +747,18 @@ window.addEventListener("pointerdown", (e) => {
   void slotEl.offsetWidth; // force reflow to restart animation
   slotEl.classList.add("tap-anim");
 
-  // Spawn poop emoji at touch/click position
-  spawnPoop(e.clientX, e.clientY);
-  lastPoopXY = { x: e.clientX, y: e.clientY };
+  // Don't spawn poop emojis if slot is constipated
+  if (!constipated[i]) {
+    // Spawn poop emoji at touch/click position
+    spawnPoop(e.clientX, e.clientY);
+    lastPoopXY = { x: e.clientX, y: e.clientY };
 
-  // Start continuous poop spawning while holding
-  if (poopInterval) clearInterval(poopInterval);
-  poopInterval = setInterval(() => {
-    if (lastPoopXY) spawnPoop(lastPoopXY.x, lastPoopXY.y);
-  }, 120);
+    // Start continuous poop spawning while holding
+    if (poopInterval) clearInterval(poopInterval);
+    poopInterval = setInterval(() => {
+      if (lastPoopXY) spawnPoop(lastPoopXY.x, lastPoopXY.y);
+    }, 120);
+  }
 
   pointerDown = { id: e.pointerId, i, t0: performance.now() };
 }, { passive: true });
