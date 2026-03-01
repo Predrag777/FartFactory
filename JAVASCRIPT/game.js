@@ -189,7 +189,8 @@ function updateDeathStatus() {
 
   if (middleGasFillEl) {
     const fillPercent = Math.max(0, Math.min(100, (totalDeaths / DEATH_LIMIT) * 100));
-    middleGasFillEl.style.width = `${fillPercent}%`;
+    const visualFillPercent = fillPercent * 0.95;
+    middleGasFillEl.style.width = `${visualFillPercent}%`;
     // Shift hue from green (120) to red (0) as deaths increase
     const hue = 120 - (fillPercent / 100) * 120;
     const colorStart = `hsl(${hue}, 70%, 35%)`;
@@ -515,10 +516,51 @@ function triggerGameOver() {
   triggerExplosionSequence({ isGameOver: true });
 }
 
+function triggerSlotExplosion(i) {
+  const slot = slots[i];
+  if (!slot) return;
+
+  slot.classList.remove('slot-exploding');
+  void slot.offsetWidth;
+  slot.classList.add('slot-exploding');
+
+  let layer = slot.querySelector('.slot-explosion-layer');
+  if (!layer) {
+    layer = document.createElement('div');
+    layer.className = 'slot-explosion-layer';
+    slot.appendChild(layer);
+  }
+
+  layer.innerHTML = '';
+  const colors = ['#fbbf24', '#f97316', '#fde68a', '#f87171', '#facc15', '#fff'];
+
+  for (let p = 0; p < 16; p++) {
+    const angle = (Math.PI * 2) * (p / 16) + Math.random() * 0.25;
+    const dist = 34 + Math.random() * 30;
+    const ex = Math.cos(angle) * dist;
+    const ey = Math.sin(angle) * dist;
+
+    const particle = document.createElement('div');
+    particle.className = 'slot-explosion-particle';
+    particle.style.left = '50%';
+    particle.style.top = '50%';
+    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+    particle.style.setProperty('--ex', `${ex}px`);
+    particle.style.setProperty('--ey', `${ey}px`);
+    particle.style.animation = 'explodeSlotParticle 0.45s cubic-bezier(0.22,1,0.36,1) forwards';
+    layer.appendChild(particle);
+  }
+
+  setTimeout(() => {
+    slot.classList.remove('slot-exploding');
+    if (layer) layer.innerHTML = '';
+  }, 500);
+}
+
 // -----------------------------
 // KILL / REVIVE
 // -----------------------------
-function killSlot(i) {
+function killSlot(i, { fromOverflow = false } = {}) {
   if (dead[i] || gameOver) return;
 
   // ako je constipated slot umro, skini constipation stanje
@@ -533,6 +575,8 @@ function killSlot(i) {
   playRandomDeathSound();
 
   totalDeaths += 1;
+
+  if (fromOverflow) triggerSlotExplosion(i);
 
   pressures[i] = 0;
   setGasHeight(slots[i], 0);
@@ -596,6 +640,9 @@ function reviveSlot(i) {
   }
 
   slots[i].disabled = false;
+  slots[i].classList.remove('slot-exploding');
+  const layer = slots[i].querySelector('.slot-explosion-layer');
+  if (layer) layer.innerHTML = '';
   hideDeadOverlay(slots[i]);
 }
 
@@ -630,6 +677,9 @@ function restartGame() {
     hideConstipation(i);
 
     slot.disabled = false;
+    slot.classList.remove('slot-exploding');
+    const layer = slot.querySelector('.slot-explosion-layer');
+    if (layer) layer.innerHTML = '';
     hideDeadOverlay(slot);
     setGasHeight(slot, 0);
 
@@ -890,7 +940,7 @@ function update(dt) {
 
     if (pressures[i] >= MAX) {
       pressures[i] = MAX;
-      killSlot(i);
+      killSlot(i, { fromOverflow: true });
       return;
     }
 
