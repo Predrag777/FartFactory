@@ -928,7 +928,31 @@ main{
 }
 
 .slot.constipated{
-  animation: constipatedShake 0.15s linear infinite;
+  animation:
+    constipatedShake 0.15s linear infinite,
+    constipatedGlowPulse 0.75s ease-in-out infinite;
+  border-color: rgba(255, 164, 28, 0.95);
+}
+
+@keyframes constipatedGlowPulse{
+  0%, 100%{
+    box-shadow:
+      inset 0 0 22px rgba(255,170,40,0.18),
+      0 0 18px rgba(255,145,0,0.55),
+      0 0 42px rgba(255,145,0,0.38),
+      0 0 74px rgba(255,90,0,0.20),
+      0 4px 20px rgba(0,0,0,0.25);
+    filter: brightness(1.08) saturate(1.18);
+  }
+  50%{
+    box-shadow:
+      inset 0 0 34px rgba(255,170,40,0.28),
+      0 0 30px rgba(255,145,0,0.85),
+      0 0 62px rgba(255,120,0,0.60),
+      0 0 112px rgba(255,70,0,0.34),
+      0 4px 20px rgba(0,0,0,0.25);
+    filter: brightness(1.2) saturate(1.3);
+  }
 }
 
 @keyframes constipatedShake{
