@@ -575,22 +575,10 @@ function killSlot(i) {
 
   if (totalDeaths >= DEATH_LIMIT) {
     triggerGameOver();
-  } else if (deadSlotsNow >= 3) {
-    // If 3 or more dead at once, treat as game over
-    if (!gameOver) {
-      gameOver = true;
-      slots.forEach(s => s.disabled = true);
-      backgroundMusic.pause();
-      backgroundMusic.currentTime = 0;
-      backgroundMusicDanger.pause();
-      backgroundMusicDanger.currentTime = 0;
-      backgroundMusicCritical.pause();
-      backgroundMusicCritical.currentTime = 0;
-      if (deathStatusEl) {
-        deathStatusEl.textContent = `Status: ${totalDeaths} / ${DEATH_LIMIT} deaths • GAME OVER`;
-      }
-      triggerExplosionSequence({ isGameOver: true });
-    }
+  } else if (deadSlotsNow >= SIMULTANEOUS_DEAD_LIMIT) {
+    totalDeaths = DEATH_LIMIT;
+    updateDeathStatus();
+    triggerGameOver();
   }
 }
 
@@ -741,6 +729,12 @@ window.addEventListener("pointerdown", (e) => {
   if (i === null) return;
   if (dead[i]) return; // disabled ionako blokira
 
+  // Every new constipation attempt starts from 0 progress
+  if (constipated[i]) {
+    holdMs[i] = 0;
+    updateConstipationProgress(i);
+  }
+
   // Tap animation — restart on every press so spamming works
   const slotEl = slots[i];
   slotEl.classList.remove("tap-anim");
@@ -781,7 +775,7 @@ window.addEventListener("pointerup", (e) => {
 
   // ako je constipated: tap ne radi; ako je pustio pre 1s, reset progres
   if (constipated[i]) {
-    if (dtMs < CONST_HOLD_TO_CURE_MS) {
+    if (holdMs[i] < CONST_HOLD_TO_CURE_MS) {
       holdMs[i] = 0;
       updateConstipationProgress(i);
     }
@@ -790,13 +784,8 @@ window.addEventListener("pointerup", (e) => {
 
   // normal: tap <= 200ms
   if (dtMs <= TAP_MAX_MS) {
-    pressures[i] -= CLICK_REDUCTION;
+    pressures[i] = Math.max(0, pressures[i] - CLICK_REDUCTION);
     // Fart counter is now incremented when poop emoji arrives
-
-    if (pressures[i] < UNDERFLOW_DEATH_THRESHOLD) {
-      killSlot(i);
-      return;
-    }
 
     setGasHeight(slots[i], pressures[i]);
   }
@@ -810,6 +799,13 @@ window.addEventListener("pointermove", (e) => {
 }, { passive: true });
 
 window.addEventListener("pointercancel", () => {
+  if (pointerDown) {
+    const i = pointerDown.i;
+    if (constipated[i] && holdMs[i] < CONST_HOLD_TO_CURE_MS) {
+      holdMs[i] = 0;
+      updateConstipationProgress(i);
+    }
+  }
   if (poopInterval) { clearInterval(poopInterval); poopInterval = null; }
   lastPoopXY = null;
   pointerDown = null;
@@ -857,7 +853,13 @@ function update(dt) {
     }
   } else {
     // remove healing from all slots when not holding
-    slots.forEach(s => s.classList.remove('healing'));
+    slots.forEach((s, i) => {
+      s.classList.remove('healing');
+      if (constipated[i] && holdMs[i] > 0) {
+        holdMs[i] = 0;
+        updateConstipationProgress(i);
+      }
+    });
   }
 
   slots.forEach((slot, i) => {
@@ -888,11 +890,6 @@ function update(dt) {
 
     if (pressures[i] >= MAX) {
       pressures[i] = MAX;
-      killSlot(i);
-      return;
-    }
-
-    if (pressures[i] < UNDERFLOW_DEATH_THRESHOLD) {
       killSlot(i);
       return;
     }
