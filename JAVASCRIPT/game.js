@@ -396,7 +396,8 @@ function cureConstipation(i) {
 
   // Bonus: +5 poop points for curing constipation
   totalFarts += 5;
-  if (fartCounterEl) fartCounterEl.textContent = `\uD83D\uDCA9 ${totalFarts}`;
+  const fv1 = document.getElementById('fartCounterValue');
+  if (fv1) fv1.textContent = totalFarts;
 }
 
 // -----------------------------
@@ -657,7 +658,8 @@ function restartGame() {
   gameOver = false;
   totalDeaths = 0;
   totalFarts = 0;
-  if (fartCounterEl) fartCounterEl.textContent = '� 0';
+  const fv2 = document.getElementById('fartCounterValue');
+  if (fv2) fv2.textContent = '0';
   updateDeathStatus();
 
   elapsedSec = 0;
@@ -760,7 +762,8 @@ function spawnPoop(x, y) {
   setTimeout(() => {
     pendingPoopFarts--;
     totalFarts++;
-    if (fartCounterEl) fartCounterEl.textContent = `\uD83D\uDCA9 ${totalFarts}`;
+    const fv3 = document.getElementById('fartCounterValue');
+    if (fv3) fv3.textContent = totalFarts;
     // Quick pulse on counter
     if (target) {
       target.style.transform = 'scale(1.15)';
