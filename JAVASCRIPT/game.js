@@ -75,8 +75,8 @@ function playRandomDeathSound() {
   audio.play().catch(() => {});
 }
 
-playBackgroundTrack(3);
 window.addEventListener("pointerdown", () => {
+  if (!gameStarted) return;
   const currentTrack = activeBackgroundTrack === 3
     ? backgroundMusicCritical
     : activeBackgroundTrack === 2
@@ -95,7 +95,7 @@ const holdMs = new Array(slots.length).fill(0);
 
 const MAX = 100;
 const UNDERFLOW_DEATH_THRESHOLD = -20;
-const BASE_SPEED = 10;       // osnovna brzina rasta (po sekundi)
+const BASE_SPEED = 10;       // osnovna brzina  rasta (po sekundi)
 const CLICK_REDUCTION = 20;
 const RESPAWN_SECONDS = 5;
 
@@ -104,6 +104,7 @@ const SIMULTANEOUS_DEAD_LIMIT = 3;
 let totalDeaths = 0;
 let totalFarts = 0;
 let gameOver = false;
+let gameStarted = false;
 let deathBurstTimers = []; // track pending death-burst timeouts
 let canDismissModal = false; // prevent accidental backdrop tap closing modal
 
@@ -167,6 +168,25 @@ const restartBtn = document.getElementById("restartBtn");
 const exitBtn = document.getElementById("exitBtn");
 const finalTimeEl = document.getElementById("finalTime");
 const finalFartsEl = document.getElementById("finalFarts");
+const startBackdrop = document.getElementById("startBackdrop");
+const startBtn = document.getElementById("startBtn");
+
+function openStartPopup() {
+  if (!startBackdrop) return;
+  startBackdrop.classList.add("active");
+}
+
+function closeStartPopup() {
+  if (!startBackdrop) return;
+  startBackdrop.classList.remove("active");
+}
+
+function startGame() {
+  if (gameStarted) return;
+  gameStarted = true;
+  closeStartPopup();
+  playBackgroundTrack(3);
+}
 
 // TIMER
 let elapsedSec = 0;
@@ -706,6 +726,7 @@ if (exitBtn) exitBtn.addEventListener("click", () => {
   // fallback: go to a blank page if window.close() is blocked
   window.location.href = "about:blank";
 });
+if (startBtn) startBtn.addEventListener("click", startGame);
 
 // -----------------------------
 // TAP vs HOLD (pointer events)
@@ -774,7 +795,7 @@ let poopInterval = null; // for hold-spawning
 let lastPoopXY = null;
 
 window.addEventListener("pointerdown", (e) => {
-  if (gameOver) return;
+  if (!gameStarted || gameOver) return;
   const i = slotIndexFromTarget(e.target);
   if (i === null) return;
   if (dead[i]) return; // disabled ionako blokira
@@ -818,7 +839,7 @@ window.addEventListener("pointerup", (e) => {
   const { i, t0 } = pointerDown;
   pointerDown = null;
 
-  if (gameOver || dead[i]) return;
+  if (!gameStarted || gameOver || dead[i]) return;
 
   const dtMs = performance.now() - t0;
   playRandomClickSound();
@@ -868,7 +889,7 @@ let t = 0;
 let lastTime = performance.now();
 
 function update(dt) {
-  if (gameOver) return;
+  if (!gameStarted || gameOver) return;
 
   // TIMER
   timerAcc += dt;
@@ -961,3 +982,4 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
+openStartPopup();
