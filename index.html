@@ -11,6 +11,9 @@
   <div class="app">
 
     <div class="top-header" aria-label="Game header">
+      <button class="arrow-btn" id="arrowBtn" type="button" aria-label="Arrow">
+        <img src="UI/images/arrow.png" alt="Arrow" />
+      </button>
       <div class="top-header-spacer" aria-hidden="true"></div>
       <button class="coins-btn" id="coinsBtn" type="button" aria-label="Coins">
         <span class="coins-icon" aria-hidden="true">🪙</span>
@@ -20,7 +23,7 @@
     <main>
       <div class="header-right" id="statsBar">
           <div class="pill" id="gameTimer">00:00</div>
-          <div class="pill fart-pill" id="fartCounter">� 0</div>
+          <div class="pill fart-pill" id="fartCounter"><img class="fart-pill-icon" src="UI/images/poopEmoji.png" alt="poop" /> <span id="fartCounterValue">0</span></div>
       </div>
 
       <section class="grid" id="topGrid">
